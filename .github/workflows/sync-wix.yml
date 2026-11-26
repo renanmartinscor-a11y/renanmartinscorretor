@@ -1,0 +1,30 @@
+name: Sincronizar com o site no Wix
+on:
+  schedule:
+    - cron: "40 */3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Baixar a versão atual do site
+        run: |
+          BASE="https://headless-crgvvnpdjbk-renanmartinscor-140f.wix-site-host.com"
+          for f in index.html guia-itapoa.html monograma.svg monograma-escuro.svg; do
+            curl -fsSL "$BASE/$f" -o "/tmp/$f.new" || continue
+            if [ "$(wc -c < /tmp/$f.new)" -gt 500 ] && grep -qi "</html>\|</svg>" "/tmp/$f.new"; then
+              mv "/tmp/$f.new" "$f"
+            fi
+          done
+      - name: Publicar se mudou
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Atualização automática do site"
+            git push
+          fi
