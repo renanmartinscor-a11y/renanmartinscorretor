@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 356 246" width="356" height="246" role="img" aria-label="Renan Martins">
+<defs><linearGradient id="gd" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="340" y2="240"><stop offset="0" stop-color="#F0D9A0"/><stop offset=".5" stop-color="#D2AE66"/><stop offset="1" stop-color="#B08840"/></linearGradient><linearGradient id="sv" gradientUnits="userSpaceOnUse" x1="80" y1="0" x2="300" y2="240"><stop offset="0" stop-color="#F4F6F8"/><stop offset="1" stop-color="#AEB5BD"/></linearGradient></defs>
+<g transform="translate(0 8)">
+<g fill="none" stroke="url(#gd)" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square">
+<path d="M58 228 V60 L92 40 V228"/>
+<path d="M75 228 V52"/>
+<path d="M28 228 V128 L58 112"/>
+<path d="M92 92 L112 104 V228"/>
+<path d="M40 150 H48 M40 166 H48 M40 182 H48 M40 198 H48" stroke-width="3"/>
+<path d="M100 124 H106 M100 140 H106 M100 156 H106 M100 172 H106" stroke-width="3"/>
+<path d="M14 228 H124"/>
+</g>
+<path d="M124 92 H146 V228 H124 Z" fill="url(#gd)"/>
+<path d="M86 10 H200 C238 10 262 34 262 66 C262 98 238 122 200 122 H146 V102 H200 C224 102 240 87 240 66 C240 45 224 30 200 30 H104 Z" fill="url(#sv)"/>
+<path d="M258 216 L236 190 L316 86 H330 V214 L342 228 H300 L312 214 V128 Z" fill="url(#gd)"/>
+<path d="M168 112 H194 L292 228 H264 Z" fill="url(#sv)"/>
+</g>
+</svg>

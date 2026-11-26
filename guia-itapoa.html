@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia de Itapoá · Renan Martins Corretor de Imóveis</title>
+<meta name="description" content="Guia de Itapoá/SC para quem quer morar ou investir: população, porto, praias, obras, distâncias e fontes.">
+<link rel="icon" href="monograma.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cardo&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: relatório em capítulos numerados, capa fotográfica, versão de impressão clara */
+  --noir:#0A0A0B; --coal:#141416; --gold:#C9A45C; --gold-l:#E8D2A0; --silver:#C7CACF; --line:rgba(201,164,92,.28);
+  --cap:"Cinzel", Georgia, serif; --display:"Cormorant Garamond", Georgia, serif; --body:"Jost", Arial, sans-serif;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--noir);color:#E9E6E0;font-family:var(--body);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);font-weight:500;margin:0;text-wrap:balance}
+h1{font-size:clamp(46px,7vw,96px);line-height:.96}
+h2{font-size:clamp(32px,4vw,50px);line-height:1.05}
+h3{font-size:24px}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.cap{font-family:var(--cap);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+@media (max-width:560px){.wrap{padding:0 18px}}
+a{color:var(--gold-l)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--gold);background:var(--gold);color:#111;padding:12px 18px;font:500 12px var(--body);letter-spacing:.16em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn.line{background:transparent;color:var(--gold-l)}
+.bar{position:sticky;top:0;z-index:20;background:rgba(10,10,11,.95);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:14px;height:70px;flex-wrap:wrap}
+.bar img{height:38px}
+.bar .sp{flex:1}
+.cover{position:relative;min-height:620px;display:flex;align-items:flex-end;overflow:hidden}
+.cover .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.cover:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,11,.75) 0%,rgba(10,10,11,.35) 60%,rgba(10,10,11,.1) 100%),linear-gradient(180deg,rgba(10,10,11,.3),rgba(10,10,11,.2) 40%,var(--noir))}
+.cover .wrap{position:relative;z-index:2;padding-bottom:60px;width:100%}
+.cover p.lead{margin-top:20px;max-width:56ch;color:#DED6C8;font-size:19px;font-weight:300}
+.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:50px}
+.toc a{background:var(--coal);padding:16px 18px;text-decoration:none;color:#DAD6CE;font-size:14.5px}
+.toc a b{font-family:var(--display);font-size:24px;color:var(--gold-l);margin-right:10px;font-weight:500}
+@media (max-width:700px){.toc{grid-template-columns:1fr}}
+.ch{padding:90px 0 0}
+.chhead{display:grid;grid-template-columns:110px 1fr;gap:24px;align-items:start;border-top:1px solid var(--line);padding-top:30px}
+.chhead .n{font-family:var(--display);font-size:80px;line-height:.8;color:var(--gold)}
+@media (max-width:600px){.chhead{grid-template-columns:1fr}.chhead .n{font-size:54px}}
+.body{margin-left:134px;margin-top:26px;display:grid;gap:22px}
+@media (max-width:600px){.body{margin-left:0}}
+.body p{max-width:66ch;color:#CFCBC3}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.kpis div{background:var(--coal);padding:22px 20px}
+.kpis b{display:block;font-family:var(--display);font-size:40px;line-height:1;color:var(--gold-l);font-weight:500}
+.kpis span{font-size:13.5px;color:#BDB9B1}
+.kpis small{display:block;font-size:11.5px;color:#8C8B87;margin-top:6px}
+@media (max-width:820px){.kpis{grid-template-columns:1fr 1fr}}
+.chart{background:var(--coal);border:1px solid var(--line);padding:24px}
+.tl{border-left:1px solid var(--line);margin-left:6px}
+.tl div{position:relative;padding:0 0 22px 24px}
+.tl div:before{content:"";position:absolute;left:-6px;top:7px;width:11px;height:11px;border:1px solid var(--gold);background:var(--noir);transform:rotate(45deg)}
+.tl div.done:before{background:var(--gold)}
+.tl b{display:block;font-weight:500}
+.tl small{color:#A9A69F;font-size:14px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+th{font-family:var(--cap);font-size:10px;letter-spacing:.2em;color:var(--gold);font-weight:500}
+td.r,th.r{text-align:right}
+.note{font-size:13.5px;color:#9F9C95;border-left:1px solid var(--gold);padding:4px 14px}
+.photo{width:100%;aspect-ratio:16/8;background-size:cover;background-position:center;border:1px solid var(--line)}
+.src{font-size:13.5px;color:#9F9C95}
+.src li{margin-bottom:6px}
+.src a{color:#BDB9B1}
+.end{margin-top:90px;border-top:1px solid var(--line);padding:50px 0 70px;display:grid;grid-template-columns:auto 1fr auto;gap:30px;align-items:center}
+@media (max-width:760px){.end{grid-template-columns:1fr}}
+/* ===== Tema claro (igual ao site) ===== */
+:root{--noir:#FAF8F4;--coal:#FFFFFF;--gold:#A47A35;--gold-l:#1E3354;--line:#ECE6DC;--cap:"Plus Jakarta Sans",Arial,sans-serif;--display:"Plus Jakarta Sans",Arial,sans-serif;--body:"Plus Jakarta Sans",Arial,sans-serif;color-scheme:light}
+body{background:#FAF8F4;color:#3B424B}
+h1,h2,h3{font-weight:700;letter-spacing:-.025em;color:#14181D}
+h1{font-size:clamp(40px,6vw,76px);line-height:1.02}
+.cap{font-weight:600;letter-spacing:.14em}
+a{color:#1E3354}
+.btn{background:#1E3354;border-color:#1E3354;color:#fff;border-radius:999px;letter-spacing:0;text-transform:none;font:600 14px var(--body);padding:11px 18px}
+.btn.line{background:#fff;color:#14181D;border-color:#DED6C8}
+.bar{background:rgba(255,255,255,.94);backdrop-filter:blur(12px)}
+.cover{margin:12px 16px 0;border-radius:28px}
+.cover:after{background:linear-gradient(90deg,rgba(14,22,38,.66) 0%,rgba(14,22,38,.3) 60%,rgba(14,22,38,.05) 100%)}
+.cover h1{color:#fff}.cover .cap{color:#F1E3C4}
+.cover p.lead{color:rgba(255,255,255,.9);font-weight:400}
+.toc{gap:10px;background:none;border:0}
+.toc a{border:1px solid #ECE6DC;border-radius:14px;color:#14181D;font-weight:500}
+.toc a b{font-size:18px;font-weight:700;color:#1E3354}
+.chhead .n{font-weight:700;color:#1E3354;letter-spacing:-.04em}
+.body p{color:#3B424B}
+.kpis{gap:10px;background:none;border:0}
+.kpis div{border:1px solid #ECE6DC;border-radius:16px}
+.kpis b{font-weight:700;font-size:32px;color:#14181D;letter-spacing:-.02em}
+.kpis span{color:#3B424B}.kpis small{color:#6B727C}
+.chart{border-radius:18px}
+.tl div:before{border-radius:50%;transform:none;background:#fff;border-color:#1E3354}
+.tl div.done:before{background:#1E3354}
+.tl small{color:#6B727C}
+th,td{border-bottom:1px solid #ECE6DC;color:#14181D}
+th{font-size:12px;letter-spacing:.02em;color:#6B727C;font-weight:600}
+.note,.src{color:#6B727C}.src a{color:#3B424B}
+.photo{border:0;border-radius:18px}
+.end span{color:#6B727C!important}
+/* Logo (monograma vetorial + nome em Cardo) */
+.lockup{display:inline-flex;flex-direction:column;align-items:center;text-decoration:none}
+.lockup img{width:200px;max-width:70%;height:auto}
+.lockup b{font-family:"Cardo",Georgia,serif;font-weight:400;font-size:34px;letter-spacing:.14em;margin-top:16px;color:#E6CB8F;white-space:nowrap;line-height:1}
+.lockup small{display:flex;align-items:center;gap:12px;font-family:"Cardo",Georgia,serif;font-size:13px;letter-spacing:.3em;color:#D2B172;margin-top:10px;white-space:nowrap}
+.lockup small:before,.lockup small:after{content:"";width:34px;height:1px;background:currentColor}
+.lockup.light b{color:#1C2127}.lockup.light small{color:#A47A35}
+.lockup.sm img{width:110px}.lockup.sm b{font-size:21px;margin-top:10px}.lockup.sm small{font-size:10px;margin-top:7px}.lockup.sm small:before,.lockup.sm small:after{width:20px}
+.end .lockup.light b{color:#1C2127!important}.end .lockup.light small{color:#A47A35!important}
+@media print{
+  body{background:#fff;color:#1A1A1C;font-size:12pt}
+  .bar,.noprint{display:none!important}
+  .cover{min-height:auto;color:#fff;break-after:page}
+  .cover .bg{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ch{break-inside:avoid-page;padding-top:40px}
+  .body p,.tl small,.src,.note,.kpis span{color:#333}
+  .kpis,.toc{background:#ccc}.kpis div,.chart,.toc a{background:#fff;color:#1A1A1C}
+  .kpis b,.chhead .n{color:#8E6C31}
+  th{color:#8E6C31}td{border-color:#ddd}
+}
+</style>
+</head>
+<body>
+<div class="bar noprint"><div class="wrap">
+  <a href="index.html" aria-label="Voltar ao site"><img src="monograma.svg" alt="Renan Martins" width="58" height="40"></a>
+  <span class="cap" style="font-size:10.5px">Guia de Itapoá</span><span class="sp"></span>
+  <a class="btn line" href="index.html">Voltar ao site</a>
+  <button class="btn" type="button" id="printBtn">Salvar em PDF</button>
+</div></div>
+
+<header class="cover">
+  <div class="bg" style="background-image:url('https://static.wixstatic.com/media/ad50e8_13c9538be8ce40c9813838685b95ec4d~mv2.jpg/v1/fill/w_1920,h_1100,al_c,q_80,enc_auto/itapoa.jpg')"></div>
+  <div class="wrap">
+    <p class="cap">Guia do comprador · Novembro de 2026</p>
+    <h1 style="margin-top:18px">Itapoá, <em>Santa Catarina</em></h1>
+    <p class="lead">Porto, praia e infraestrutura nova: o que está por trás da cidade que mais cresce em Santa Catarina, em números e com as fontes de cada dado.</p>
+    <nav class="toc noprint" aria-label="Capítulos">
+      <a href="#c1"><b>01</b>Resumo</a><a href="#c2"><b>02</b>População</a><a href="#c3"><b>03</b>Economia e porto</a>
+      <a href="#c4"><b>04</b>Praias e orla</a><a href="#c5"><b>05</b>Acesso e obras</a><a href="#c6"><b>06</b>Bairros e lançamentos</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="ch" id="c1">
+    <div class="chhead"><span class="n">01</span><div><p class="cap">Resumo</p><h2 style="margin-top:8px">Itapoá em quatro números</h2></div></div>
+    <div class="body">
+      <div class="kpis num">
+        <div><b>37.488</b><span>habitantes estimados para 2026</span><small>IBGE · 36.033 em 2025</small></div>
+        <div><b>+4,04%</b><span>de crescimento em um ano</span><small>maior taxa de Santa Catarina</small></div>
+        <div><b>32 km</b><span>de orla</span><small>8,8 km de praia alargada</small></div>
+        <div><b>1,5 mi</b><span>de TEUs no Porto Itapoá em 2025</span><small>maior terminal privado de contêineres do país</small></div>
+      </div>
+      <p>Itapoá fica no extremo norte do litoral catarinense, na divisa com o Paraná e na entrada da Baía da Babitonga. A cidade combina duas economias: a portuária, que gera emprego o ano todo, e a balneária, que recebe turistas e concentra os lançamentos residenciais.</p>
+    </div>
+  </section>
+
+  <section class="ch" id="c2">
+    <div class="chhead"><span class="n">02</span><div><p class="cap">População</p><h2 style="margin-top:8px">A cidade mais que dobrou desde 2010</h2></div></div>
+    <div class="body">
+      <div class="chart"><div id="popChart"></div><p class="note" style="margin-top:12px">Censo 2010 e 2022; estimativas do IBGE para 2024, 2025 e 2026.</p></div>
+      <p>No Censo de 2010, Itapoá tinha cerca de 14,8 mil moradores. A estimativa do IBGE para 2026 é de 37.488 habitantes, um avanço de 4,04% sobre 2025, a maior taxa entre os municípios catarinenses. Em 16 anos, o número de moradores cresceu cerca de 154%.</p>
+      <p>Boa parte de quem chega vem de fora: reportagem regional apontou que 64% dos moradores são de outros estados, sobretudo do Paraná.</p>
+    </div>
+  </section>
+
+  <section class="ch" id="c3">
+    <div class="chhead"><span class="n">03</span><div><p class="cap">Economia e porto</p><h2 style="margin-top:8px">O Porto Itapoá move a cidade</h2></div></div>
+    <div class="body">
+      <div class="kpis num">
+        <div><b>1,5 mi</b><span>TEUs movimentados em 2025</span><small>meta do ano atingida</small></div>
+        <div><b>10 mi</b><span>TEUs acumulados desde 2011</span><small>marca de maio/2025</small></div>
+        <div><b>2º</b><span>maior movimentador de contêineres do país</span><small>ANTAQ · 1º trimestre de 2025</small></div>
+        <div><b>R$ 64,7 mil</b><span>PIB per capita</span><small>IBGE · 2023</small></div>
+      </div>
+      <p>O Porto Itapoá fechou 2025 com 1,5 milhão de TEUs e é o maior terminal privado de contêineres do Brasil. A dragagem do canal de acesso à Baía da Babitonga aumenta o calado de 14 para 16 metros, o que permite receber navios maiores com carga máxima. Também estão previstos novos terminais na região, como o da Coamo.</p>
+    </div>
+  </section>
+
+  <section class="ch" id="c4">
+    <div class="chhead"><span class="n">04</span><div><p class="cap">Praias e orla</p><h2 style="margin-top:8px">O maior alargamento de praia do Brasil</h2></div></div>
+    <div class="body">
+      <div class="photo" style="background-image:url('https://static.wixstatic.com/media/ad50e8_d210caefa46e4624b0091be99d074a4f~mv2.jpg/v1/fill/w_1600,h_800,al_c,q_80,enc_auto/orla.jpg')" role="img" aria-label="Imagem ilustrativa de empreendimento na orla de Itapoá"></div>
+      <p>Concluída em 2026, a obra alargou 8,8 km dos 32 km de orla, nas praias de Pontal do Norte, Princesa do Mar e Figueira do Pontal, com cerca de 6 milhões de metros cúbicos de areia vindos da dragagem da Babitonga. Foi a primeira do país a usar sedimentos de dragagem portuária para alargar praias. A prefeitura estuda alargar mais 9 km.</p>
+      <p class="note">A imprensa regional registrou expectativa de valorização imobiliária de até 28% após o alargamento. Expectativa não é garantia: considere seu objetivo e seu prazo.</p>
+    </div>
+  </section>
+
+  <section class="ch" id="c5">
+    <div class="chhead"><span class="n">05</span><div><p class="cap">Acesso e obras</p><h2 style="margin-top:8px">Mais perto de quem vem visitar</h2></div></div>
+    <div class="body">
+      <div class="tl">
+        <div class="done"><b>Ponte de Guaratuba inaugurada</b><small>1º de maio de 2026 · investimento de R$ 400 milhões do Governo do Paraná · substitui o ferry e encurta o caminho de quem vem de Curitiba</small></div>
+        <div class="done"><b>Alargamento da orla concluído</b><small>8,8 km de praia em Pontal do Norte, Princesa do Mar e Figueira do Pontal</small></div>
+        <div><b>Dragagem do canal da Babitonga</b><small>Calado de 14 para 16 m; conclusão prevista para 2026</small></div>
+        <div><b>Duplicação da SC-417</b><small>Acordo de royalties com o Paraná prevê R$ 365 milhões</small></div>
+        <div><b>Novos alargamentos</b><small>Mais 9 km de orla em estudo pela prefeitura</small></div>
+      </div>
+      <table class="num">
+        <thead><tr><th>Destino</th><th class="r">Distância</th><th class="r">Tempo</th></tr></thead>
+        <tbody>
+          <tr><td>Guaratuba (PR)</td><td class="r">17 km</td><td class="r">25 min</td></tr>
+          <tr><td>Garuva · BR-101</td><td class="r">41 km</td><td class="r">33 min</td></tr>
+          <tr><td>Joinville</td><td class="r">73 km</td><td class="r">1 h</td></tr>
+          <tr><td>Curitiba</td><td class="r">130 km</td><td class="r">1h40</td></tr>
+          <tr><td>Ponta Grossa</td><td class="r">240 km</td><td class="r">3h10</td></tr>
+          <tr><td>Londrina</td><td class="r">510 km</td><td class="r">6h30</td></tr>
+          <tr><td>Maringá</td><td class="r">550 km</td><td class="r">7 h</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Distâncias a partir da Barra do Saí, conforme material da incorporadora Rottas, considerando a Ponte de Guaratuba concluída.</p>
+    </div>
+  </section>
+
+  <section class="ch" id="c6">
+    <div class="chhead"><span class="n">06</span><div><p class="cap">Bairros e lançamentos</p><h2 style="margin-top:8px">Onde estão os empreendimentos</h2></div></div>
+    <div class="body">
+      <table>
+        <thead><tr><th>Bairro</th><th>Empreendimentos que eu atendo</th></tr></thead>
+        <tbody>
+          <tr><td>Barra do Saí</td><td>Barra Soul Home Resort &amp; Spa (Rottas), Amanay Beach Club (Rôgga)</td></tr>
+          <tr><td>Pontal do Norte</td><td>Babitonga Beach Club (Rôgga), a 270 m da praia</td></tr>
+          <tr><td>Princesa do Mar</td><td>Bangalô Beach Club (Rôgga), lazer frente mar</td></tr>
+          <tr><td>Santa Clara</td><td>Brisa Beach Club (Rôgga)</td></tr>
+          <tr><td>Paese</td><td>Residencial The Gardens (Supercon), pronto</td></tr>
+          <tr><td>Itapema do Norte</td><td>Imóveis prontos da Cleverson Imóveis (UNIK Residence, Terra &amp; Mar, Triplex 3 Suítes)</td></tr>
+          <tr><td>Endereço sob consulta</td><td>Infinity (Inovace), Bossa Itapoá (Zanardi), Residencial Viamare (WV)</td></tr>
+        </tbody>
+      </table>
+      <p>Valores, unidades disponíveis e fluxo de pagamento de cada empreendimento estão no site, atualizados com as tabelas das incorporadoras.</p>
+      <div class="noprint"><a class="btn" href="index.html#unidades">Ver unidades disponíveis</a></div>
+    </div>
+  </section>
+
+  <section class="ch">
+    <div class="chhead"><span class="n">·</span><div><p class="cap">Fontes</p><h2 style="margin-top:8px">De onde vêm os números</h2></div></div>
+    <div class="body">
+      <ul class="src">
+        <li><a href="https://www.ibge.gov.br/cidades-e-estados/sc/itapoa.html" target="_blank" rel="noopener">IBGE Cidades · Itapoá</a>: população estimada, área, PIB per capita</li>
+        <li><a href="https://www.nsctotal.com.br/?p=8022832" target="_blank" rel="noopener">NSC Total</a>: estimativa populacional 2026 e 32 km de orla</li>
+        <li><a href="https://www.nsctotal.com.br/?p=7631416" target="_blank" rel="noopener">NSC Total</a>: crescimento desde o Censo 2010</li>
+        <li><a href="https://correiodoestado.com.br/mix/cidade-catarinense-nao-para-de-receber-novos-moradores-e-64-da-populacao-ja-e-de-outros-lugares/" target="_blank" rel="noopener">Correio do Estado</a>: moradores de outros estados</li>
+        <li><a href="https://www.gazetadopovo.com.br/santa-catarina/movimentacao-portos-santa-catarina-2025/" target="_blank" rel="noopener">Gazeta do Povo</a>: portos de SC em 2025</li>
+        <li><a href="https://mundologistica.com.br/noticias/porto-itapoa-atinge-marca-de-10-milhoes-de-teus-movimentados" target="_blank" rel="noopener">Mundo Logística</a>: 10 milhões de TEUs e ranking ANTAQ</li>
+        <li><a href="https://www.nsctotal.com.br/?p=8016766" target="_blank" rel="noopener">NSC Total</a>: alargamento concluído e dragagem</li>
+        <li><a href="https://www.gazetasp.com.br/cotidiano/o-que-saiu-do-fundo-da-baia-da-babitonga-acabou-transformando-88-km-de-praias-em-santa-catarina/" target="_blank" rel="noopener">Gazeta SP</a>: areia da dragagem na orla</li>
+        <li><a href="https://www.nsctotal.com.br/infraestrutura/maior-alargamento-do-brasil-termina-em-sc-com-expectativa-de-valorizacao-imobiliaria-e-turistica" target="_blank" rel="noopener">NSC Total</a>: expectativa de valorização</li>
+        <li><a href="https://www.nsctotal.com.br/?p=7856214" target="_blank" rel="noopener">NSC Total</a>: obras simultâneas, SC-417 e calado</li>
+        <li><a href="https://www.parana.pr.gov.br/aen/Noticia/Integracao-e-desenvolvimento-autoridades-destacam-impacto-historico-da-Ponte-de" target="_blank" rel="noopener">Agência Estadual de Notícias do Paraná</a>: Ponte de Guaratuba</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="end">
+    <span class="lockup light sm" role="img" aria-label="Renan Martins, Corretor de Imóveis"><img src="monograma.svg" alt=""><b>RENAN MARTINS</b><small>CORRETOR DE IMÓVEIS</small></span>
+    <div><b>Renan Martins · Corretor de Imóveis</b><br><span style="color:#A9A69F">CRECI 77906F · Cleverson Imóveis LTDA, CRECI-J 6734-J<br>Av. 780 André Rodrigues de Freitas, 287 · Itapema do Norte, Itapoá/SC · WhatsApp (47) 99201-1013</span></div>
+    <a class="btn noprint" href="https://wa.me/5547992011013?text=Ol%C3%A1%20Renan%2C%20li%20o%20guia%20de%20Itapo%C3%A1%20e%20quero%20conversar." target="_blank" rel="noopener">Falar com o Renan</a>
+  </div>
+</main>
+
+<script>
+document.getElementById('printBtn').onclick=()=>window.print();
+(function(){const D=[['2010',14763,'Censo'],['2022',30750,'Censo'],['2024',34546,'Estimativa'],['2025',36033,'Estimativa'],['2026',37488,'Estimativa']];
+ const W=760,H=300,pl=60,pb=36,pt=26,max=40000,bw=(W-pl-20)/D.length;
+ let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="População de Itapoá de 2010 a 2026">`;
+ [0,10000,20000,30000,40000].forEach(v=>{const y=H-pb-(v/max)*(H-pb-pt);s+=`<line x1="${pl}" x2="${W-10}" y1="${y}" y2="${y}" stroke="#ECE6DC"/><text x="${pl-10}" y="${y+4}" text-anchor="end" font-size="12" fill="#6B727C" font-family="Plus Jakarta Sans,Arial">${v/1000} mil</text>`;});
+ D.forEach((d,i)=>{const h=(d[1]/max)*(H-pb-pt),x=pl+i*bw+bw*.22,w=bw*.56,y=H-pb-h,last=i===D.length-1;
+  s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${last?'#1E3354':d[2]==='Censo'?'#C9CED3':'#9FB1CC'}"/><text x="${x+w/2}" y="${y-8}" text-anchor="middle" font-size="14" font-weight="500" fill="#14181D" font-family="Plus Jakarta Sans,Arial">${d[1].toLocaleString('pt-BR')}</text><text x="${x+w/2}" y="${H-pb+20}" text-anchor="middle" font-size="13" fill="#BDB9B1" font-family="Plus Jakarta Sans,Arial">${d[0]}</text>`;});
+ document.getElementById('popChart').innerHTML=s+'</svg>';})();
+</script>
+</body>
+</html>
