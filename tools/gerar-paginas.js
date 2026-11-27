@@ -75,6 +75,10 @@ ul.cols{columns:2;padding-left:18px}@media(max-width:640px){ul.cols{columns:1}.t
 .aviso{font-size:13px;color:var(--mute);margin-top:10px}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin:22px 0}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;display:block}.card .ph{aspect-ratio:16/10;background:#ddd center/cover}.card .tx{padding:14px 16px}.card h3{font-family:Marcellus,Georgia,serif;font-weight:400;color:var(--b);font-size:22px;margin:4px 0}
 .avf{background:#F6E9E7;border-top:1px solid #E8D3CF;margin-top:56px;padding:22px 0}.avf .w{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.avf p{margin:0;max-width:78ch;color:#4A0B10;font-size:15px}.avf .btn{background:var(--b);margin:0}
+.gal{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:200px 200px;gap:8px;margin:22px 0;border-radius:22px;overflow:hidden;position:relative}.gal button{border:0;padding:0;cursor:zoom-in;background:#ddd center/cover}.gal .g0{grid-row:1/3}.gmore{position:absolute;right:14px;bottom:14px;background:rgba(0,0,0,.65);color:#fff;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px;cursor:pointer}
+@media(max-width:700px){.gal{grid-template-columns:1fr 1fr;grid-template-rows:240px 120px}.gal .g0{grid-column:1/3;grid-row:auto}.gal button:nth-child(n+4){display:none}}
+.gridf{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}.gridf button{border:0;padding:0;cursor:zoom-in;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:#ddd}.gridf img{width:100%;height:100%;object-fit:cover;display:block}
+.lb{position:fixed;inset:0;background:rgba(10,6,7,.94);z-index:50;display:flex;align-items:center;justify-content:center}.lb[hidden]{display:none}.lb img{max-width:92vw;max-height:86vh;border-radius:8px}.lb button{position:absolute;background:rgba(255,255,255,.12);color:#fff;border:0;width:48px;height:48px;border-radius:50%;font-size:28px;cursor:pointer}.lbx{top:16px;right:16px}.lbp{left:16px}.lbn{right:16px}.lbc{position:absolute;bottom:16px;color:#fff;font-size:14px}
 footer{background:var(--bd);color:#E3C9C4;margin-top:0;padding:30px 0;font-size:14px}footer a{color:#F6E9E7}
 `;
 
@@ -221,6 +225,113 @@ ${us.length ? `<div><dt>Unidades disponíveis</dt><dd>${us.length}</dd></div>` :
   gerados.push({ e, url, min, capa, tp, n: us.length, tipoImovel });
 }
 
+// ---------- 3b. Imóveis à venda (catálogo copiado da Cleverson Imóveis) ----------
+const VENDA = [];
+{
+  let cat = null;
+  try { cat = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "cleverson.json"), "utf8")); } catch (e) {}
+  const dirVenda = path.join(dirImoveis, "venda");
+  if (cat && cat.imoveis && cat.imoveis.length) {
+    fs.mkdirSync(dirVenda, { recursive: true });
+    const titulo = (t) => (t === t.toUpperCase() ? t.toLowerCase().replace(/(^|[\s\-\/(])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(De|Da|Do|Das|Dos|E|Com|A|Ao|No|Na|Em)\b/g, (w) => w.toLowerCase()).replace(/^./, (c) => c.toUpperCase()) : t);
+    const tipoDe = (it) => {
+      const t = (it.campos["Tipo de Imóvel"] || "") + " " + it.nome;
+      if (/terreno|lote/i.test(t)) return "terreno";
+      if (/apartamento|cobertura|studio|kitnet|flat|giardino|garden/i.test(t)) return "apartamento";
+      if (/casa|sobrado|geminad|chal[eé]|triplex|duplex/i.test(t)) return "casa";
+      return "apartamento";
+    };
+    const num = (v) => { const m = String(v || "").match(/\d+/); return m ? Number(m[0]) : 0; };
+    const areaDe = (c) => {
+      for (const [k, suf] of [["Área Privada", "priv."], ["Área Útil", "útil"], ["Área Total", "total"], ["Terreno", "terreno"]]) if (c[k]) return c[k] + " " + suf;
+      return "";
+    };
+    for (const it of cat.imoveis) {
+      const c = it.campos || {};
+      const tipo = tipoDe(it);
+      const est = c["Estágio do Imóvel"] || "";
+      const fase = tipo === "apartamento" && est && !/pronto/i.test(est) ? "planta" : "";
+      const qm = String(c["Quartos"] || c["Quarto"] || "").match(/(\d+)(?:.*?(\d+)\s*su[ií]te)?/i);
+      const q = qm ? Number(qm[1]) : it.quartos || 0;
+      const s2 = qm && qm[2] ? Number(qm[2]) : 0;
+      const v = num(c["Vagas"] || c["Vaga"]);
+      const nome = titulo(it.nome);
+      const local2 = [it.bairro, it.cidade].filter(Boolean).join(", ");
+      const url = SITE + "/imoveis/venda/" + it.id + "/";
+      VENDA.push({ it, nome, tipo, fase, est, q, s: s2, v, area: areaDe(c), url, local: local2 });
+    }
+    for (const g of VENDA) {
+      const { it } = g;
+      const c = it.campos || {};
+      const desc = (it.descricao || "").split(/\n+/).map((l) => l.trim()).filter((l) => l && !/saiba mais|clique (aqui|em)/i.test(l));
+      const fotos = it.fotos || [];
+      const tipoTxt = g.tipo === "terreno" ? "Terreno" : g.tipo === "casa" ? "Casa" : g.fase ? "Apartamento na planta" : "Apartamento";
+      const title = `${g.nome} · ${tipoTxt.toLowerCase()} à venda em ${g.local}${it.preco ? " · " + brl(it.preco) : ""} | Renan Martins`;
+      const descMeta = (`${tipoTxt} à venda em ${g.local}` + (it.preco ? ` por ${brl(it.preco)}` : "") + ". " + desc.join(" ")).replace(/\s+/g, " ").slice(0, 290);
+      const ficha = [
+        ["Tipo", c["Tipo de Imóvel"] ? c["Tipo de Imóvel"].replace(/^Residencial\s*»\s*/, "") : tipoTxt],
+        ["Estágio", g.est],
+        ["Quartos", c["Quartos"] || c["Quarto"]],
+        ["Banheiros", c["Banheiros"] || c["Banheiro"]],
+        ["Vagas", c["Vagas"] || c["Vaga"]],
+        ["Área privativa", c["Área Privada"]],
+        ["Área útil", c["Área Útil"]],
+        ["Área total", c["Área Total"]],
+        ["Terreno", c["Terreno"]],
+        ["Frente × fundos", c["Largura da Frente"] && c["Largura dos Fundos"] ? c["Largura da Frente"] + " × " + c["Largura dos Fundos"] : ""],
+        ["Distância do mar", c["Distância do Mar (m)"] ? c["Distância do Mar (m)"] + " m" : ""],
+        ["Mobília", c["Mobílias"]],
+        ["Construtora", c["Construtora"]],
+        ["Entrega", c["Data de Entrega"]],
+        ["Ano de construção", c["Ano de Construção"]],
+        ["Andar", c["Número do Andar"]],
+        ["Bairro", it.bairro],
+        ["Cidade", it.cidade ? it.cidade + "/SC" : ""],
+      ].filter(([, v]) => v);
+      const msg = `Olá Renan, vi no seu site o imóvel "${g.nome}" (${g.local}${it.preco ? ", " + brl(it.preco) : ""}) e quero saber mais.`;
+      let b = `<p class="crumb"><a href="/">Início</a> › <a href="/imoveis/">Imóveis em Itapoá</a> › <a href="/imoveis/#venda">À venda</a> › ${esc(g.nome)}</p>`;
+      if (fotos.length) {
+        b += `<div class="gal"><button class="g0" data-i="0" style="background-image:url('${fotos[0]}')" aria-label="Ampliar foto 1"></button>` +
+          fotos.slice(1, 5).map((f, n) => `<button data-i="${n + 1}" style="background-image:url('${f}')" aria-label="Ampliar foto ${n + 2}"></button>`).join("") +
+          (fotos.length > 5 ? `<span class="gmore">+${fotos.length - 5} fotos</span>` : "") + `</div>`;
+      }
+      b += `<p class="cap">${esc(tipoTxt)}${g.est && !/pronto/i.test(g.est) ? " · " + esc(g.est) : g.est ? " · Pronto" : ""}</p><h1>${esc(g.nome)}</h1><p class="lead">${esc(g.local)}</p>`;
+      b += `<dl class="kv">${it.preco ? `<div><dt>Valor</dt><dd>${brl(it.preco)}</dd></div>` : `<div><dt>Valor</dt><dd>Sob consulta</dd></div>`}` +
+        (g.q ? `<div><dt>Quartos</dt><dd>${g.q}${g.s ? ` (${g.s} suíte${g.s > 1 ? "s" : ""})` : ""}</dd></div>` : "") +
+        (g.v ? `<div><dt>Vagas</dt><dd>${g.v}</dd></div>` : "") + (g.area ? `<div><dt>Área</dt><dd>${esc(g.area)}</dd></div>` : "") + `</dl>`;
+      b += `<a class="btn" href="${wa(msg)}">Tenho interesse · WhatsApp</a>`;
+      if (desc.length) b += `<h2>Sobre o imóvel</h2>` + desc.map((l) => `<p>${esc(l)}</p>`).join("");
+      b += `<h2>Ficha do imóvel</h2><dl class="kv">` + ficha.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("") + `</dl>`;
+      if (it.comodidades && it.comodidades.length) b += `<h2>Comodidades</h2><ul class="cols">` + it.comodidades.map((x) => `<li>${esc(x)}</li>`).join("") + `</ul>`;
+      if (it.geo) b += `<p><a href="https://www.google.com/maps?q=${it.geo.lat},${it.geo.lng}" target="_blank" rel="noopener">Ver localização aproximada no mapa ↗</a></p>`;
+      if (fotos.length > 1) b += `<h2>Todas as fotos (${fotos.length})</h2><div class="gridf">` + fotos.map((f, n) => `<button data-i="${n}" aria-label="Ampliar foto ${n + 1}"><img src="${f}" alt="${esc(g.nome)} · foto ${n + 1}" loading="lazy"></button>`).join("") + `</div>`;
+      b += `<p class="aviso">Imóvel do portfólio da Cleverson Imóveis LTDA (CRECI-J 6734-J), atendimento do corretor Renan Martins (CRECI 77906F). Valor e disponibilidade podem mudar sem aviso prévio.</p>`;
+      if (fotos.length) b += `<div class="lb" id="lb" hidden><button class="lbx" aria-label="Fechar">×</button><button class="lbp" aria-label="Foto anterior">‹</button><img alt=""><button class="lbn" aria-label="Próxima foto">›</button><span class="lbc"></span></div>
+<script>(()=>{const F=${JSON.stringify(fotos)};const lb=document.getElementById('lb'),im=lb.querySelector('img'),c=lb.querySelector('.lbc');let i=0;const show=n=>{i=(n+F.length)%F.length;im.src=F[i];c.textContent=(i+1)+' / '+F.length;lb.hidden=false;};document.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>show(+b.dataset.i));const g=document.querySelector('.gmore');if(g)g.onclick=()=>show(5);lb.querySelector('.lbx').onclick=()=>lb.hidden=true;lb.querySelector('.lbp').onclick=()=>show(i-1);lb.querySelector('.lbn').onclick=()=>show(i+1);lb.onclick=e=>{if(e.target===lb)lb.hidden=true};document.addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')lb.hidden=true;if(e.key==='ArrowLeft')show(i-1);if(e.key==='ArrowRight')show(i+1);});})();</script>`;
+      const ld = {
+        "@context": "https://schema.org",
+        "@graph": [AGENTE, {
+          "@type": "RealEstateListing", name: g.nome, url: g.url, description: desc.join(" ").slice(0, 500),
+          ...(fotos.length ? { image: fotos.slice(0, 6).map((f) => SITE + f) } : {}),
+          ...(it.preco ? { offers: { "@type": "Offer", price: it.preco, priceCurrency: "BRL" } } : {}),
+          address: { "@type": "PostalAddress", addressLocality: it.cidade, addressRegion: "SC", addressCountry: "BR" },
+        }, { "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Início", item: SITE + "/" },
+          { "@type": "ListItem", position: 2, name: "Imóveis em Itapoá", item: SITE + "/imoveis/" },
+          { "@type": "ListItem", position: 3, name: g.nome, item: g.url }] }],
+      };
+      const d = path.join(dirVenda, it.id);
+      fs.mkdirSync(d, { recursive: true });
+      fs.writeFileSync(path.join(d, "index.html"), pagina({ title, desc: descMeta, canon: g.url, body: b, ld, image: it.capa ? SITE + it.capa : null }));
+    }
+    const ids = new Set(VENDA.map((g) => g.it.id));
+    for (const d of fs.readdirSync(dirVenda)) {
+      const p = path.join(dirVenda, d);
+      if (fs.statSync(p).isDirectory() && !ids.has(d)) fs.rmSync(p, { recursive: true, force: true });
+    }
+  }
+}
+
 // ---------- 4. Página com todos os empreendimentos ----------
 {
   const url = SITE + "/imoveis/";
@@ -233,7 +344,15 @@ ${us.length ? `<div><dt>Unidades disponíveis</dt><dd>${us.length}</dd></div>` :
     const e = g.e;
     b += `<a class="card" href="/imoveis/${slug(e)}/">${g.capa ? `<div class="ph" style="background-image:url('${img(e.imgs[0], 800, 500)}')"></div>` : ""}<div class="tx"><span class="cap">${esc(e.incorp)} · ${esc(e.status)}</span><h3>${esc(e.nome)}</h3><p>${esc(local(e))} · Entrega ${esc(entregaTxt(e))}${g.min ? `<br><b>A partir de ${brl(g.min)}</b>` : ""}</p></div></a>`;
   }
-  b += `</div><p class="aviso">Valores podem mudar sem aviso prévio.</p>`;
+  b += `</div>`;
+  if (VENDA.length) {
+    b += `<h2 id="venda">Casas, terrenos e apartamentos à venda</h2><p>Imóveis prontos e oportunidades em Itapoá e região, com fotos e ficha completa.</p><div class="cards">`;
+    for (const g of VENDA) {
+      b += `<a class="card" href="/imoveis/venda/${g.it.id}/">${g.it.capa ? `<div class="ph" style="background-image:url('${g.it.capa}')"></div>` : ""}<div class="tx"><span class="cap">${esc(g.tipo === "terreno" ? "Terreno" : g.tipo === "casa" ? "Casa" : g.fase ? "Apartamento na planta" : "Apartamento")}</span><h3>${esc(g.nome)}</h3><p>${esc(g.local)}${[g.q ? g.q + " quarto" + (g.q > 1 ? "s" : "") : "", g.area].filter(Boolean).length ? "<br>" + esc([g.q ? g.q + " quarto" + (g.q > 1 ? "s" : "") : "", g.area].filter(Boolean).join(" · ")) : ""}${g.it.preco ? `<br><b>${brl(g.it.preco)}</b>` : ""}</p></div></a>`;
+    }
+    b += `</div>`;
+  }
+  b += `<p class="aviso">Valores podem mudar sem aviso prévio.</p>`;
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
@@ -256,7 +375,7 @@ ${us.length ? `<div><dt>Unidades disponíveis</dt><dd>${us.length}</dd></div>` :
 const ids = new Set(EMPS.map(slug));
 for (const d of fs.readdirSync(dirImoveis)) {
   const p = path.join(dirImoveis, d);
-  if (fs.statSync(p).isDirectory() && !ids.has(d)) fs.rmSync(p, { recursive: true, force: true });
+  if (fs.statSync(p).isDirectory() && !ids.has(d) && d !== "venda") fs.rmSync(p, { recursive: true, force: true });
 }
 
 // ---------- 6. Links no rodapé do site principal (para o Google achar as páginas) ----------
@@ -272,8 +391,23 @@ for (const d of fs.readdirSync(dirImoveis)) {
   fs.writeFileSync(path.join(ROOT, "index.html"), s);
 }
 
+// ---------- 6b. Catálogo de imóveis à venda dentro do site principal ----------
+if (VENDA.length) {
+  let s2 = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const i = s2.indexOf("const CLV=");
+  const j = s2.indexOf("]];", i);
+  if (i > 0 && j > i) {
+    const rows = VENDA.map((g) => [g.it.id + "/", g.nome, g.tipo, g.it.bairro || "", g.it.cidade || "", g.it.preco || 0, 0, g.q, g.s, g.v, g.area, g.it.capa || "", g.fase, g.est && !/pronto/i.test(g.est) ? g.est : ""]);
+    s2 = s2.slice(0, i) + "const CLV=" + JSON.stringify(rows) + ";" + s2.slice(j + 3);
+    s2 = s2.replace("const CLV_URL='https://cleversonimoveis.com.br/';", "const CLV_URL='/imoveis/venda/';");
+    s2 = s2.split('href="${CLV_URL+o.slug}" target="_blank" rel="noopener"').join('href="${CLV_URL+o.slug}"');
+    s2 = s2.replace("Ver fotos ↗</span>", "Ver fotos</span>").replace("Fotos e detalhes ↗</a>", "Fotos e detalhes</a>");
+    fs.writeFileSync(path.join(ROOT, "index.html"), s2);
+  }
+}
+
 // ---------- 7. Sitemap e robots ----------
-const urls = [SITE + "/", SITE + "/imoveis/", ...gerados.map((g) => g.url), SITE + "/guia-itapoa.html"];
+const urls = [SITE + "/", SITE + "/imoveis/", ...gerados.map((g) => g.url), ...VENDA.map((g) => g.url), SITE + "/guia-itapoa.html"];
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
   urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n") + `\n</urlset>\n`);
