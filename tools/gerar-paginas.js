@@ -383,7 +383,7 @@ for (const d of fs.readdirSync(dirImoveis)) {
   const A = "<!--seo-links-->", B = "<!--/seo-links-->";
   const bloco = `${A}<nav aria-label="Imóveis por empreendimento" style="max-width:1200px;margin:0 auto;padding:18px 20px 0;font-size:13px;line-height:1.9;opacity:.85">Imóveis em Itapoá: ` +
     gerados.map((g) => `<a href="/imoveis/${slug(g.e)}/">${esc(g.e.nome)}</a>`).join(" · ") +
-    ` · <a href="/imoveis/">todos os empreendimentos</a></nav>${B}`;
+    ` · <a href="/imoveis/">todos os empreendimentos</a> · <a href="/renan-martins/">Sobre Renan Martins, corretor de imóveis em Itapoá</a></nav>${B}`;
   let s = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
   const i = s.indexOf(A), j = s.indexOf(B);
   if (i >= 0 && j > i) s = s.slice(0, i) + bloco + s.slice(j + B.length);
@@ -406,8 +406,56 @@ if (VENDA.length) {
   }
 }
 
+// ---------- 6c. Página "Renan Martins" (para quem pesquisa o nome no Google) ----------
+const PESSOA = {
+  "@type": "Person",
+  "@id": SITE + "/#renan",
+  name: "Renan Martins",
+  alternateName: ["Renan Martins Corretor", "Renan Martins Corretor de Imóveis", "r.martinscorretor"],
+  jobTitle: "Corretor de Imóveis · CRECI 77906F",
+  description: "Renan Martins é corretor de imóveis em Itapoá/SC (CRECI 77906F), na Cleverson Imóveis. Trabalha com lançamentos na planta, imóveis prontos e oportunidades no litoral norte de Santa Catarina.",
+  url: SITE + "/renan-martins/",
+  image: SITE + "/logo/icon-512.png",
+  telephone: "+55 47 99201-1013",
+  worksFor: { "@type": "RealEstateAgent", name: "Cleverson Imóveis LTDA", address: AGENTE.address },
+  workLocation: { "@type": "Place", name: "Itapoá, SC" },
+  knowsAbout: ["Imóveis em Itapoá", "Apartamentos na planta", "Lançamentos imobiliários", "Imóveis frente mar"],
+  sameAs: AGENTE.sameAs,
+  mainEntityOfPage: SITE + "/renan-martins/",
+};
+{
+  const url = SITE + "/renan-martins/";
+  const redes = [["Instagram", "https://www.instagram.com/r.martinscorretor/", "@r.martinscorretor"], ["TikTok", "https://www.tiktok.com/@renanmartins.cor", "@renanmartins.cor"], ["YouTube", "https://www.youtube.com/channel/UCJZcB5OzFQ_VAmShAqpu5UQ", "Canal Renan Martins"]];
+  const b = `<p class="bc"><a href="/">Início</a> › Renan Martins</p>
+<div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin:18px 0 8px"><img src="/logo/logo-completo.png" alt="Renan Martins, Corretor de Imóveis" style="width:260px;max-width:100%;background:#13233F;border-radius:18px;padding:22px">
+<div style="flex:1;min-width:260px"><h1 style="margin:0">Renan Martins · Corretor de Imóveis em Itapoá/SC</h1>
+<p class="lead">Sou o Renan Martins, corretor de imóveis em Itapoá, Santa Catarina (CRECI 77906F), na Cleverson Imóveis. Trabalho com lançamentos na planta, imóveis prontos e oportunidades para morar, veranear ou investir, sempre com a tabela atualizada e o fluxo de pagamento explicado parcela por parcela.</p>
+<a class="btn" href="${wa("Olá Renan, vim pelo seu site.")}">Falar comigo no WhatsApp</a></div></div>
+<h2>Contato</h2>
+<dl class="kv"><div><dt>WhatsApp</dt><dd><a href="${wa("Olá Renan, vim pelo seu site.")}">(47) 99201-1013</a></dd></div><div><dt>CRECI</dt><dd>77906F</dd></div><div><dt>Imobiliária</dt><dd>Cleverson Imóveis LTDA · CRECI-J 6734-J</dd></div><div><dt>Escritório</dt><dd>Av. 780 André Rodrigues de Freitas, 287 · Itapema do Norte, Itapoá/SC</dd></div></dl>
+<h2>Redes sociais</h2>
+<ul>${redes.map(([n, u, h]) => `<li><b>${n}:</b> <a href="${u}" rel="me">${h}</a></li>`).join("")}</ul>
+<h2>Imóveis que eu trabalho</h2>
+<ul>${gerados.map((g) => `<li><a href="/imoveis/${slug(g.e)}/">${esc(g.e.nome)}</a> · ${esc(g.e.incorp)} · ${esc(g.e.cidade)}</li>`).join("")}</ul>
+<p><a href="/imoveis/">Ver todos os empreendimentos</a> · <a href="/imoveis/#venda">Imóveis prontos à venda</a> · <a href="/guia-itapoa.html">Guia de Itapoá</a></p>`;
+  fs.mkdirSync(path.join(ROOT, "renan-martins"), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, "renan-martins", "index.html"), pagina({
+    title: "Renan Martins · Corretor de Imóveis em Itapoá/SC · CRECI 77906F",
+    desc: "Renan Martins, corretor de imóveis em Itapoá/SC (CRECI 77906F). WhatsApp (47) 99201-1013, Instagram @r.martinscorretor. Lançamentos, apartamentos na planta e imóveis prontos.",
+    canon: url, body: b, image: SITE + "/logo/icon-512.png",
+    ld: { "@context": "https://schema.org", "@graph": [{ "@type": "ProfilePage", "@id": url, url, name: "Renan Martins · Corretor de Imóveis", mainEntity: { "@id": SITE + "/#renan" } }, PESSOA, AGENTE] },
+  }));
+  // Pessoa também no JSON-LD da página inicial
+  let s = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const k = '{"@context":"https://schema.org","@graph":[';
+  if (s.includes(k) && !s.includes('"@id":"' + SITE + '/#renan"')) {
+    s = s.replace(k, k + JSON.stringify(PESSOA) + ",");
+    fs.writeFileSync(path.join(ROOT, "index.html"), s);
+  }
+}
+
 // ---------- 7. Sitemap e robots ----------
-const urls = [SITE + "/", SITE + "/imoveis/", ...gerados.map((g) => g.url), ...VENDA.map((g) => g.url), SITE + "/guia-itapoa.html"];
+const urls = [SITE + "/", SITE + "/renan-martins/", SITE + "/imoveis/", ...gerados.map((g) => g.url), ...VENDA.map((g) => g.url), SITE + "/guia-itapoa.html"];
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
   urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n") + `\n</urlset>\n`);
