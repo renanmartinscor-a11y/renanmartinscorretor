@@ -11,6 +11,7 @@ const FOTOS = path.join(ROOT, "fotos");
 const UA = "Mozilla/5.0 (compatible; RenanMartinsSite/1.0; +https://renanmartinscorretor.com.br)";
 const FORCE = process.argv.includes("--force");
 const MAX_FOTOS = 40;
+const VERSAO = 2;
 
 let sharp;
 try { sharp = require("sharp"); } catch (e) { sharp = null; }
@@ -21,7 +22,7 @@ const strip = (h) => String(h || "")
   .replace(/<span class="buildingId">[\s\S]*?<\/span>/g, "")
   .replace(/<span class="ImovelFavorito[\s\S]*?<\/span>\s*<\/span>/g, "")
   .replace(/<[^>]+>/g, " ")
-  .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+  .replace(/&raquo;/g, "»").replace(/&laquo;/g, "«").replace(/&ordm;/g, "º").replace(/&ordf;/g, "ª").replace(/&sup2;/g, "²").replace(/&#(\d+);/g, (m, n) => String.fromCharCode(Number(n))).replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
   .replace(/»/g, "»").replace(/\s+/g, " ").trim();
 
 async function get(url, binary) {
@@ -46,7 +47,7 @@ function parseListing(html, slug) {
   if (!L || !L.name) return null;
   const cut = html.split("Não é o que você queria")[0];
   const rows = {};
-  for (const m of cut.matchAll(/<td class="Label">([\s\S]*?)<\/td>\s*<td class="Value">([\s\S]*?)<\/td>/g)) {
+  for (const m of cut.matchAll(/<td class="Label[^"]*">((?:(?!<td)[\s\S])*?)<\/td>\s*<td class="Value[^"]*">([\s\S]*?)<\/td>/g)) {
     const k = strip(m[1]).replace(/:$/, "");
     const v = strip(m[2]);
     if (k && v && !(k in rows) && k !== "Mapa") rows[k] = v;
@@ -83,7 +84,7 @@ async function salvarFoto(buf, destino, largura, altura) {
   try { antigo = JSON.parse(fs.readFileSync(DATA, "utf8")); } catch (e) {}
   if (antigo && !FORCE) {
     const idade = (Date.now() - Date.parse(antigo.atualizado)) / 36e5;
-    if (idade < 20) { console.log("Cleverson: dados de " + idade.toFixed(1) + "h atrás, nada a fazer."); return; }
+    if (idade < 20 && antigo.versao === VERSAO) { console.log("Cleverson: dados de " + idade.toFixed(1) + "h atrás, nada a fazer."); return; }
   }
 
   const sm = await get(BASE + "/sitemap/buildings.xml");
@@ -160,6 +161,6 @@ async function salvarFoto(buf, destino, largura, altura) {
 
   imoveis.sort((a, b) => (a.cidade === "Itapoá" ? 0 : 1) - (b.cidade === "Itapoá" ? 0 : 1) || a.preco - b.preco);
   fs.mkdirSync(path.dirname(DATA), { recursive: true });
-  fs.writeFileSync(DATA, JSON.stringify({ atualizado: new Date().toISOString(), fonte: BASE, imoveis }, null, 1));
+  fs.writeFileSync(DATA, JSON.stringify({ versao: VERSAO, atualizado: new Date().toISOString(), fonte: BASE, imoveis }, null, 1));
   console.log("Cleverson: " + imoveis.length + " imóveis salvos.");
 })().catch((e) => { console.error(e); process.exit(1); });
