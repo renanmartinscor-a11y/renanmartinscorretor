@@ -576,6 +576,30 @@ button.cell.sea,.esplegend i.sea{border-color:#E0B3AE}
 .hero-actions .btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.55)}
 .hero-actions .btn:hover{filter:brightness(1.06)}
 @media (max-width:640px){.hero-intro b{font-size:18px}.hero-intro small{font-size:10.5px}.hero-actions .btn{width:100%;justify-content:center}}
+/* Carrossel em tela cheia, unificado com o topo */
+header.top{background:linear-gradient(180deg,rgba(18,8,10,.45),rgba(18,8,10,0))!important;border-bottom-color:transparent!important;transition:background .35s}
+header.top.solid{background:rgba(111,18,24,.97)!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
+.hero{margin:0!important;border-radius:0!important;min-height:100vh!important;min-height:100svh!important}
+.hero .wrap{padding-top:150px;padding-bottom:96px}
+.hero .bg{animation:heroZoom 16s ease-in-out infinite alternate;will-change:transform}
+@keyframes heroZoom{from{transform:scale(1)}to{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.hero .bg{animation:none}}
+.hero:after{background:linear-gradient(90deg,rgba(18,8,10,.68) 0%,rgba(18,8,10,.32) 50%,rgba(18,8,10,.04) 82%),linear-gradient(180deg,rgba(18,8,10,.3) 0%,rgba(18,8,10,0) 24%,rgba(18,8,10,0) 55%,rgba(18,8,10,.6) 100%)!important}
+.hero h1{font-size:clamp(40px,6vw,76px);max-width:15ch}
+.hero .credit{bottom:26px}
+.hero-down{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:3;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.6);color:#fff;display:grid;place-items:center;text-decoration:none;font-size:20px;animation:heroBob 2.2s ease-in-out infinite}
+@keyframes heroBob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,6px)}}
+.busca{padding-top:72px}
+.busca .sechead{margin-bottom:22px}
+.busca .search{margin-top:0;box-shadow:0 14px 40px rgba(74,11,16,.12);border:1px solid var(--line);max-width:none}
+.busca + .sec{padding-top:72px}
+@media (max-width:640px){.hero .wrap{padding-top:120px;padding-bottom:90px}.hero h1{font-size:36px}.busca{padding-top:48px}}
+.aviso-final{background:#F6E9E7;border-top:1px solid #E8D3CF;margin-top:90px;padding:26px 0}
+.aviso-final .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.aviso-final p{margin:0;max-width:78ch;color:#4A0B10;font-size:15px;line-height:1.55}
+.aviso-final b{color:#6F1218}
+.aviso-final .btn{background:#6F1218;color:#fff;border-color:#6F1218;white-space:nowrap}
+.aviso-final + footer{margin-top:0}
 </style>
 <script id="wix-site-script" src="https://manage.wix.com/_api/headless-business-setup/v1/headless-business/site-script.js" data-client-id="179d5058-84eb-49f6-80f8-7cf22d9f5e08" async></script></head>
 <body>
@@ -614,9 +638,21 @@ button.cell.sea,.esplegend i.sea{border-color:#E0B3AE}
       </div>
     </div>
     <span class="credit" id="heroCredit"></span>
+    <a class="hero-down" href="#buscar" aria-label="Rolar para a busca">&#8595;</a>
   </div>
 
   <div class="wrap">
+    <div class="sec busca" id="buscar">
+      <div class="sechead"><div><p class="cap rule">Encontre seu imóvel</p><h2>O que você procura?</h2></div></div>
+      <form class="search" id="quickForm" aria-label="Busca rápida">
+        <label for="qText">O que você procura<input id="qText" placeholder="Frente mar, 3 suítes, cobertura…"></label>
+        <label for="qCid">Cidade<select id="qCid"><option value="">Todas as cidades</option></select></label>
+        <label for="qTipo">Tipo de imóvel<select id="qTipo"><option value="">Todos os imóveis</option><option value="ap-planta">Apartamento na planta</option><option value="ap-pronto">Apartamento pronto</option><option value="casa">Casa</option><option value="terreno">Terreno</option></select></label>
+        <label for="qQ">Quartos<select id="qQ"><option value="">Todos</option><option>1</option><option>2</option><option value="3">3 ou mais</option></select></label>
+        <label for="qMax">Até<select id="qMax"><option value="">Qualquer valor</option><option value="500000">R$ 500 mil</option><option value="750000">R$ 750 mil</option><option value="1000000">R$ 1 milhão</option><option value="1500000">R$ 1,5 milhão</option><option value="2500000">R$ 2,5 milhões</option></select></label>
+        <button class="btn" type="submit">Buscar</button>
+      </form>
+    </div>
 
     <div class="sec">
       <div class="sechead">
@@ -782,6 +818,7 @@ button.cell.sea,.esplegend i.sea{border-color:#E0B3AE}
 </section>
 </main>
 
+<div class="aviso-final" role="note"><div class="wrap"><p><b>Valores e disponibilidade podem mudar sem aviso prévio.</b> As informações seguem as tabelas das incorporadoras na data indicada. Antes de decidir, consulte o Renan para confirmar preço, unidade e condições atualizadas.</p><a class="btn" href="https://wa.me/5547992011013?text=Ol%C3%A1%20Renan%2C%20quero%20confirmar%20valores%20e%20disponibilidade." target="_blank" rel="noopener">Consultar valores atualizados</a></div></div>
 <footer>
   <div class="wrap">
     <div><span class="lockup sm" role="img" aria-label="Renan Martins, Corretor de Imóveis"><img src="monograma-escuro.svg" alt=""><b>RENAN MARTINS</b><small>CORRETOR DE IMÓVEIS</small></span><p style="margin-top:18px">Corretor de imóveis em Itapoá/SC · CRECI 77906F<br>Cleverson Imóveis LTDA · CRECI-J 6734-J</p></div>
