@@ -11,10 +11,19 @@ const FOTOS = path.join(ROOT, "fotos");
 const UA = "Mozilla/5.0 (compatible; RenanMartinsSite/1.0; +https://renanmartinscorretor.com.br)";
 const FORCE = process.argv.includes("--force");
 const MAX_FOTOS = 40;
-const VERSAO = 2;
+const VERSAO = 3;
 
 let sharp;
 try { sharp = require("sharp"); } catch (e) { sharp = null; }
+
+// Bairro/cidade do catálogo anterior (index.html baixado do Wix), usado só quando o anúncio não informa
+const ANTIGO_CLV = {};
+try {
+  const ix = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const a = ix.indexOf("const CLV=");
+  const b = ix.indexOf("]];", a);
+  if (a > 0 && b > a) for (const r of JSON.parse(ix.slice(a + 10, b + 2))) ANTIGO_CLV[String(r[0]).replace(/\/$/, "")] = { bairro: r[3], cidade: r[4] };
+} catch (e) {}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const safeSlug = (s) => String(s).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
@@ -53,6 +62,12 @@ function parseListing(html, slug) {
     if (k && v && !(k in rows) && k !== "Mapa") rows[k] = v;
   }
   const imgs = Array.isArray(L.image) ? L.image : L.image ? [L.image] : [];
+  // Bairro/cidade pelo título da página ("... para venda | Bairro, Cidade, Estado | ...")
+  const tm = (html.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || "";
+  const partes = (tm.split("|")[1] || "").split(",").map((x) => strip(x)).filter(Boolean);
+  const tCidade = partes.length >= 2 ? partes[partes.length - 2] : "";
+  const tBairro = partes.length >= 3 ? partes[partes.length - 3] : "";
+  const ant = ANTIGO_CLV[slug] || {};
   return {
     slug,
     id: safeSlug(slug),
@@ -62,8 +77,8 @@ function parseListing(html, slug) {
     quartos: L.numberOfBedroomsTotal || 0,
     banheiros: L.numberOfBathroomsTotal || 0,
     endereco: (L.address && L.address.streetAddress) || "",
-    cidade: rows["Cidade"] || (L.address && L.address.addressLocality) || "",
-    bairro: rows["Bairro"] || "",
+    cidade: rows["Cidade"] || (L.address && L.address.addressLocality) || tCidade || ant.cidade || "",
+    bairro: rows["Bairro"] || tBairro || ant.bairro || "",
     geo: L.geo && L.geo.latitude ? { lat: Number(L.geo.latitude), lng: Number(L.geo.longitude) } : null,
     comodidades: (L.amenityFeature || []).map((a) => (a && (a.name || a.value)) || a).filter((x) => typeof x === "string"),
     publicado: L.datePosted || "",
