@@ -13,7 +13,7 @@ const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 
 // ---------- 1. Ler os dados do site ----------
 function lerDados(s) {
-  const a = s.indexOf(">", s.lastIndexOf("<script")) + 1;
+  const a = s.indexOf(">", s.lastIndexOf("<script", s.indexOf("const EMPS"))) + 1;
   const mark = "EMPS.forEach(e=>{e.imgs=IMGS[e.id]||[];});";
   const b = s.indexOf(mark, a);
   if (a <= 0 || b < 0) throw new Error("Não achei os dados no index.html");
