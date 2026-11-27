@@ -98,7 +98,7 @@ function pagina({ title, desc, canon, body, ld, image }) {
 <meta property="og:url" content="${canon}">
 ${image ? `<meta property="og:image" content="${image}">` : ""}
 <meta name="theme-color" content="#13233F">
-<link rel="icon" href="/logo/icon-512.png" type="image/png">
+<link rel="icon" href="/logo/icon-512.png?v=2" type="image/png">
 <link rel="alternate icon" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -460,7 +460,9 @@ for (const f of ["index.html", "guia-itapoa.html"]) {
   const p = path.join(ROOT, f);
   if (!fs.existsSync(p)) continue;
   let h = fs.readFileSync(p, "utf8");
-  if (!h.includes("/js/lead.js")) { h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/lead.js" defer></script>\n</body>'); fs.writeFileSync(p, h); }
+  h = h.split('href="/logo/icon-512.png"').join('href="/logo/icon-512.png?v=2"').split('href="favicon.png"').join('href="/favicon.png?v=2"');
+  if (!h.includes("/js/lead.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/lead.js" defer></script>\n</body>');
+  fs.writeFileSync(p, h);
 }
 
 // ---------- 7. Sitemap e robots ----------
