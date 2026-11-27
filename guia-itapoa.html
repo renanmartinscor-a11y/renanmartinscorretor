@@ -279,5 +279,6 @@ document.getElementById('printBtn').onclick=()=>window.print();
   s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${last?'#1E3354':d[2]==='Censo'?'#C9CED3':'#9FB1CC'}"/><text x="${x+w/2}" y="${y-8}" text-anchor="middle" font-size="14" font-weight="500" fill="#14181D" font-family="Plus Jakarta Sans,Arial">${d[1].toLocaleString('pt-BR')}</text><text x="${x+w/2}" y="${H-pb+20}" text-anchor="middle" font-size="13" fill="#BDB9B1" font-family="Plus Jakarta Sans,Arial">${d[0]}</text>`;});
  document.getElementById('popChart').innerHTML=s+'</svg>';})();
 </script>
+<script src="/js/lead.js" defer></script>
 </body>
 </html>
