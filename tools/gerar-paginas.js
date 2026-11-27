@@ -119,6 +119,7 @@ ${body}
 <p>WhatsApp <a href="${wa("Olá Renan, vim pelo seu site.")}">(47) 99201-1013</a> · <a href="https://www.instagram.com/r.martinscorretor/">@r.martinscorretor</a> · <a href="/">Site completo</a> · <a href="/imoveis/">Todos os empreendimentos</a> · <a href="/guia-itapoa.html">Guia de Itapoá</a></p>
 <p class="aviso" style="color:#C9D3E2">Valores, disponibilidade e condições conforme as tabelas das incorporadoras na data indicada. Podem mudar sem aviso prévio. Imagens ilustrativas.</p>
 </div></footer>
+<script src="/js/lead.js" defer></script>
 </body>
 </html>
 `;
@@ -452,6 +453,14 @@ const PESSOA = {
     s = s.replace(k, k + JSON.stringify(PESSOA) + ",");
     fs.writeFileSync(path.join(ROOT, "index.html"), s);
   }
+}
+
+// ---------- 6d. Formulário de primeiro contato em todas as páginas ----------
+for (const f of ["index.html", "guia-itapoa.html"]) {
+  const p = path.join(ROOT, f);
+  if (!fs.existsSync(p)) continue;
+  let h = fs.readFileSync(p, "utf8");
+  if (!h.includes("/js/lead.js")) { h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/lead.js" defer></script>\n</body>'); fs.writeFileSync(p, h); }
 }
 
 // ---------- 7. Sitemap e robots ----------
