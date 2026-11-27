@@ -175,7 +175,7 @@ ${us.length ? `<div><dt>Unidades disponíveis</dt><dd>${us.length}</dd></div>` :
   if (us.length) {
     b += `<h2>Unidades disponíveis</h2><div class="tw"><table><thead><tr><th>Unidade</th><th>Tipologia</th><th>Área privativa</th><th>Posição</th><th>Valor</th></tr></thead><tbody>`;
     for (const u of us) {
-      b += `<tr><td>${esc(u.un)}${u.mar ? '<span class="mar">face mar</span>' : ""}</td><td>${esc(u.quartos || "")}</td><td>${m2(u.area)}</td><td>${esc(u.pos || "")}</td><td class="v">${brl(u.valor)}</td></tr>`;
+      b += `<tr><td>${esc(u.un)}${u.mar === "fm" ? '<span class="mar">face mar</span>' : ""}</td><td>${esc(u.quartos || "")}</td><td>${m2(u.area)}</td><td>${esc(u.pos || "")}</td><td class="v">${brl(u.valor)}</td></tr>`;
     }
     b += `</tbody></table></div>`;
     b += `<p class="aviso">${esc(e.tabela || "")}${e.tabela ? ". " : ""}${esc(e.aviso || "Valores podem mudar sem aviso prévio.")}</p>`;
