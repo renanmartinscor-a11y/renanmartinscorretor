@@ -74,7 +74,8 @@ ul.cols{columns:2;padding-left:18px}@media(max-width:640px){ul.cols{columns:1}.t
 .btn{display:inline-block;background:#1E8E5A;color:#fff;text-decoration:none;padding:13px 20px;border-radius:999px;font-weight:700;margin:6px 8px 6px 0}.btn.l{background:#fff;color:var(--b);border:1px solid var(--b)}
 .aviso{font-size:13px;color:var(--mute);margin-top:10px}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin:22px 0}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;display:block}.card .ph{aspect-ratio:16/10;background:#ddd center/cover}.card .tx{padding:14px 16px}.card h3{font-family:Marcellus,Georgia,serif;font-weight:400;color:var(--b);font-size:22px;margin:4px 0}
-footer{background:var(--bd);color:#E3C9C4;margin-top:56px;padding:30px 0;font-size:14px}footer a{color:#F6E9E7}
+.avf{background:#F6E9E7;border-top:1px solid #E8D3CF;margin-top:56px;padding:22px 0}.avf .w{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.avf p{margin:0;max-width:78ch;color:#4A0B10;font-size:15px}.avf .btn{background:var(--b);margin:0}
+footer{background:var(--bd);color:#E3C9C4;margin-top:0;padding:30px 0;font-size:14px}footer a{color:#F6E9E7}
 `;
 
 function pagina({ title, desc, canon, body, ld, image }) {
@@ -108,6 +109,7 @@ ${image ? `<meta property="og:image" content="${image}">` : ""}
 <main class="w">
 ${body}
 </main>
+<div class="avf"><div class="w"><p><b>Valores e disponibilidade podem mudar sem aviso prévio.</b> As informações seguem as tabelas das incorporadoras na data indicada. Antes de decidir, consulte o Renan para confirmar preço, unidade e condições atualizadas.</p><a class="btn" href="${wa("Olá Renan, quero confirmar valores e disponibilidade.")}">Consultar valores atualizados</a></div></div>
 <footer><div class="w">
 <p><b>Renan Martins · Corretor de Imóveis em Itapoá/SC</b> · CRECI 77906F<br>Cleverson Imóveis LTDA · CRECI-J 6734-J · Av. 780 André Rodrigues de Freitas, 287 · Itapema do Norte, Itapoá/SC</p>
 <p>WhatsApp <a href="${wa("Olá Renan, vim pelo seu site.")}">(47) 99201-1013</a> · <a href="https://www.instagram.com/r.martinscorretor/">@r.martinscorretor</a> · <a href="/">Site completo</a> · <a href="/imoveis/">Todos os empreendimentos</a> · <a href="/guia-itapoa.html">Guia de Itapoá</a></p>
