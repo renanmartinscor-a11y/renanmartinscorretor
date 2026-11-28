@@ -238,7 +238,7 @@ async function carregarPerfil(member) {
   $("#dNome").value = p.nome; $("#dCel").value = p.wpp; $("#dCreci").value = p.creci;
   try {
     const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PerfilCorretor", query: { paging: { limit: 5 } } } });
-    const it = (r.dataItems || []).find((i) => !emailDo(member) || (i.data.email || "").toLowerCase() === emailDo(member)) || (r.dataItems || [])[0];
+    const it = (r.dataItems || []).find((i) => emailDo(member) && (i.data.email || "").toLowerCase() === emailDo(member));
     if (it) {
       PERFIL_ID = it.id;
       const d = it.data;
