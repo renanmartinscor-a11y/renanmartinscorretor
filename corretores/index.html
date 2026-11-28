@@ -112,7 +112,8 @@ td.v,th.v{text-align:right;white-space:nowrap}
         <div class="row"><div><label>Nome</label><input id="upNome" required></div><div><label>Sobrenome</label><input id="upSob" required></div></div>
         <label>E-mail</label><input type="email" id="upEmail" required autocomplete="username">
         <label>Crie uma senha</label><input type="password" id="upSenha" minlength="6" required autocomplete="new-password">
-        <p><button class="btn" style="width:100%">Criar cadastro e entrar</button></p>
+        <div id="capBox" style="margin-top:14px;min-height:78px"></div>
+        <p><button class="btn" style="width:100%">Criar cadastro</button></p>
         <p class="note">Ferramenta exclusiva para corretores. É preciso ter cadastro para acessar.</p>
       </form>
       <form id="fCod" class="hid">
@@ -205,6 +206,7 @@ td.v,th.v{text-align:right;white-space:nowrap}
     <button class="btn o s" id="shFs">Tela cheia</button><button class="btn s" id="shX">Fechar ✕</button></div>
   <div class="stage" id="stage"><button class="nv p" id="shP">‹</button><button class="nv n" id="shNx">›</button></div>
 </div>
+<script src="https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=pt-BR" async defer></script>
 <script type="module" src="/corretores/app.js"></script>
 </body>
 </html>

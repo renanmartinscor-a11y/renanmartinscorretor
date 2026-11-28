@@ -1,5 +1,6 @@
-import { subscribeMember, getMemberState, login, register, verifyEmail, logout } from "/js/wix/member-store.js";
-import { wixRequest } from "/js/wix/client.js";
+import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js/wix/member-store.js";
+import { wixRequest, WixApiError } from "/js/wix/client.js";
+import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
 
 const DONO = "renanmartinscor@gmail.com";
 const $ = (s, el = document) => el.querySelector(s);
@@ -37,19 +38,43 @@ function mostrarForm(id) { ["fIn", "fUp", "fCod"].forEach((f) => $("#" + f).clas
 $$("[data-a]").forEach((b) => b.addEventListener("click", () => {
   $$("[data-a]").forEach((x) => x.classList.toggle("on", x === b));
   mostrarForm(b.dataset.a === "in" ? "fIn" : "fUp"); msg("");
+  if (b.dataset.a === "up") montarCaptcha();
 }));
 $("#fIn").addEventListener("submit", async (ev) => {
   ev.preventDefault(); msg("Entrando…");
   try { tratar(await login($("#inEmail").value.trim(), $("#inSenha").value), "in"); } catch (e) { tratar({ errorCode: e?.code || "erro" }, "in"); }
 });
+/* Cadastro com reCAPTCHA (o Wix exige na inscrição) */
+const CAP_KEY = "6Ld0J8IcAAAAANyrnxzrRlX1xrrdXsOmsepUYosy"; // chave visível do Wix
+let capId = null, capTok = "", estadoCad = null;
+function montarCaptcha() {
+  if (capId !== null) return;
+  const g = window.grecaptcha && window.grecaptcha.enterprise;
+  if (!g || !g.render) { setTimeout(montarCaptcha, 300); return; }
+  try { capId = g.render("capBox", { sitekey: CAP_KEY, callback: (t) => { capTok = t; }, "expired-callback": () => { capTok = ""; } }); } catch (e) { capId = null; }
+}
+function resetCaptcha() { capTok = ""; try { window.grecaptcha.enterprise.reset(capId); } catch (e) {} }
+async function resultadoAuth(raw) {
+  const o = authOutcome(raw);
+  if (o.stateToken) estadoCad = o.stateToken;
+  if (o.state === "SUCCESS") { location.reload(); return { state: "SUCCESS" }; }
+  return toLoginResult(o);
+}
 $("#fUp").addEventListener("submit", async (ev) => {
-  ev.preventDefault(); msg("Enviando…");
-  try { tratar(await register($("#upEmail").value.trim(), $("#upSenha").value, { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() }), "up"); }
-  catch (e) { tratar({ errorCode: e?.code || "erro" }, "up"); }
+  ev.preventDefault();
+  if (!capTok) { msg("Marque a caixa \"Não sou um robô\" antes de enviar.", "e"); return; }
+  msg("Enviando…");
+  const body = { loginId: { email: $("#upEmail").value.trim() }, password: $("#upSenha").value,
+    profile: { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() }, captcha_tokens: [{ Recaptcha: capTok }] };
+  try { tratar(await resultadoAuth(await wixRequest("/_api/iam/authentication/v2/register", { body })), "up"); }
+  catch (e) { tratar({ errorCode: (e instanceof WixApiError && registerErrorCode(e.code, e.details)) || e?.code || "erro" }, "up"); }
+  resetCaptcha();
 });
 $("#fCod").addEventListener("submit", async (ev) => {
   ev.preventDefault(); msg("Confirmando…");
-  try { tratar(await verifyEmail($("#cod").value.trim()), "up"); } catch (e) { tratar({ errorCode: e?.code || "erro" }, "up"); }
+  if (!estadoCad) { try { tratar(await verifyEmail($("#cod").value.trim()), "up"); } catch (e) { tratar({ errorCode: e?.code || "erro" }, "up"); } return; }
+  try { tratar(await resultadoAuth(await wixRequest("/_api/iam/verification/v1/auth/verify", { body: { code: $("#cod").value.trim(), stateToken: estadoCad } })), "up"); }
+  catch (e) { tratar({ errorCode: e?.code || "erro" }, "up"); }
 });
 $("#sair").addEventListener("click", () => logout("/corretores/"));
 
