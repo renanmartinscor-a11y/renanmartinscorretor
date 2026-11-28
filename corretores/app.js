@@ -84,7 +84,9 @@ function abrirAba(t) {
 async function iniciar() {
   try { DADOS = await (await fetch("/data/corretores.json", { cache: "no-store" })).json(); }
   catch { $("#bres").innerHTML = '<div class="msg e">Não foi possível carregar os dados agora.</div>'; return; }
-  DADOS.emps.forEach((e) => { e._units = DADOS.units.filter((u) => u.emp === e.id); e._min = Math.min(...e._units.map((u) => u.valor).filter((v) => v > 0)); });
+  DADOS.emps.forEach((e) => { e._units = DADOS.units.filter((u) => u.emp === e.id); e._min = e._units.length ? Math.min(...e._units.map((u) => u.valor).filter((v) => v > 0)) : (e.aPartir || 0); });
+  const atual = DADOS.gerado ? new Date(DADOS.gerado).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
+  $$(".atualizado").forEach((el) => (el.textContent = atual ? "Dados do site atualizados em " + atual + ". Tudo aqui vem do site e se atualiza sozinho." : ""));
   const opts = DADOS.emps.filter((e) => e._units.length).sort((a, b) => a.nome.localeCompare(b.nome))
     .map((e) => `<option value="${e.id}">${esc(e.nome)} (${e._units.length})</option>`).join("");
   $("#tEmp").innerHTML = opts; $("#pEmp").innerHTML = opts;
@@ -114,11 +116,17 @@ function busca() {
   $("#bres").innerHTML = L.length ? L.map((e) => `
     <div class="emp">
       <div><b>${esc(e.nome)}</b><br><span class="note">${esc(e.incorp)} · ${esc(e.bairro)}, ${esc(e.cidade)}${e.entrega ? " · entrega " + mesAno(e.entrega) : e.pronto ? " · pronto" : ""}</span><br>
-      <span class="tag">${esc(e.status)}</span>${e._units.length ? `<span class="tag">${e._units.length} disponíveis</span><span class="tag">a partir de ${brl(e._min)}</span>` : '<span class="tag">valores sob consulta</span>'}</div>
+      <span class="tag">${esc(e.status)}</span>${e._units.length ? `<span class="tag">${e._units.length} disponíveis</span><span class="tag">a partir de ${brl(e._min)}</span>` : e._min ? `<span class="tag">a partir de ${brl(e._min)}</span><span class="tag">tabela sob consulta</span>` : '<span class="tag">valores sob consulta</span>'}<br><span class="note">${esc(e.tabela || "")}</span></div>
       <span class="sp"></span>
       ${e._units.length ? `<button class="btn s" data-ver="${e.id}">Tabela</button> <button class="btn o s" data-prop="${e.id}">Proposta</button>` : ""}
       <a class="btn o s" href="${e.url}" target="_blank">Página</a>
-    </div>`).join("") : '<p class="note">Nenhum empreendimento com esse nome.</p>';
+    </div>`).join("") : "";
+  const V = q.length && ITENS.length ? ITENS.filter((i) => i.k === "v" && q.every((w) => norm(i.nome + " " + i.sub).includes(w))).slice(0, 30) : [];
+  $("#bres").innerHTML += V.map((i) => `
+    <div class="emp"><div><b>${esc(i.nome)}</b><br><span class="note">${esc(i.sub)}</span><br><span class="tag">À venda</span><span class="tag">${esc(i.preco)}</span></div>
+      <span class="sp"></span><button class="btn s" data-apv="${i.id}">Apresentar</button> <a class="btn o s" href="${esc(i.v.url)}" target="_blank">Página</a></div>`).join("");
+  if (!L.length && !V.length) $("#bres").innerHTML = '<p class="note">Nada encontrado com esse nome.</p>';
+  $$("[data-apv]").forEach((b) => b.addEventListener("click", () => abrirApres(b.dataset.apv)));
   $$("[data-ver]").forEach((b) => b.addEventListener("click", () => { $("#tEmp").value = b.dataset.ver; preencherQ(); tabela(); abrirAba("tabelas"); }));
   $$("[data-prop]").forEach((b) => b.addEventListener("click", () => { $("#pEmp").value = b.dataset.prop; unidades(); abrirAba("proposta"); }));
 }
@@ -237,12 +245,12 @@ async function iniciarApres() {
   try { AP = await (await fetch("/data/apresentacao.json", { cache: "no-store" })).json(); } catch { $("#ares").innerHTML = '<div class="msg e">Não foi possível carregar.</div>'; return; }
   const extra = Object.fromEntries(AP.emps.map((e) => [e.id, e]));
   ITENS = DADOS.emps.map((e) => ({ k: "e", id: e.id, nome: e.nome, sub: `${e.incorp} · ${e.bairro}, ${e.cidade}`, capa: extra[e.id]?.fotos?.[0] || "",
-      preco: e._units.length ? "a partir de " + brl(e._min) : "valores sob consulta", e, x: extra[e.id] || {} }))
+      preco: e._min ? "a partir de " + brl(e._min) : "valores sob consulta", e, x: extra[e.id] || {} }))
     .concat(AP.venda.map((v) => ({ k: "v", id: v.id, nome: v.nome, sub: [v.tipo, v.local].filter(Boolean).join(" · "), capa: v.fotos[0] || "",
       preco: v.valor >= 10000 ? brl(v.valor) : "valor a consultar", v })));
   $("#aq").addEventListener("input", listarApres);
   $("#aq").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const f = $("#ares .acard"); if (f) f.click(); } });
-  listarApres();
+  listarApres(); busca();
   $("#shX").addEventListener("click", fechar);
   $("#shP").addEventListener("click", () => ir(cur - 1));
   $("#shNx").addEventListener("click", () => ir(cur + 1));

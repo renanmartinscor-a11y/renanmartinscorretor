@@ -18,7 +18,7 @@
     return fetch("/data/corretores.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) {
       var min = {};
       d.units.forEach(function (u) { if (!min[u.emp] || u.valor < min[u.emp]) min[u.emp] = u.valor; });
-      DATA = d.emps.map(function (e) { return { e: e, min: min[e.id] || null, k: norm(e.nome + " " + e.incorp + " " + e.cidade + " " + e.bairro) }; });
+      DATA = d.emps.map(function (e) { return { e: e, min: min[e.id] || e.aPartir || null, k: norm(e.nome + " " + e.incorp + " " + e.cidade + " " + e.bairro) }; });
       return DATA;
     });
   }

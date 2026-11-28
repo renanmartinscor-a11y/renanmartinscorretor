@@ -9,6 +9,19 @@ const ROOT = path.resolve(__dirname, "..");
 const SITE = "https://renanmartinscorretor.com.br";
 const WA = "5547992011013";
 
+// Empreendimentos extras (tools/extra-emps.js) e imagens com caminho local: injetados no index.html
+{
+  let h0 = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+  const MARK = "EMPS.forEach(e=>{e.imgs=IMGS[e.id]||[];});";
+  if (!h0.includes("/* extra-emps */") && h0.includes(MARK)) {
+    const extra = fs.readFileSync(path.join(ROOT, "tools", "extra-emps.js"), "utf8");
+    h0 = h0.replace(MARK, "/* extra-emps */var MAPQ_EXTRA={};\n" + extra + "\n" + MARK);
+    h0 = h0.replace("Object.assign(MAPQ,{", "Object.assign(MAPQ,MAPQ_EXTRA);Object.assign(MAPQ,{");
+  }
+  h0 = h0.replace("const im=(id,w,h)=>W+id+", "const im=(id,w,h)=>/^(\\/|http)/.test(id)?id:W+id+");
+  h0 = h0.replace("const imFull=id=>W+id+", "const imFull=id=>/^(\\/|http)/.test(id)?id:W+id+");
+  fs.writeFileSync(path.join(ROOT, "index.html"), h0);
+}
 const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 
 // ---------- 1. Ler os dados do site ----------
@@ -44,7 +57,7 @@ const entregaTxt = (e) => {
   const [y, m] = String(e.entrega).split("-");
   return MESES[Number(m) - 1] + "/" + y;
 };
-const img = (id, w, h) => "https://static.wixstatic.com/media/ad50e8_" + id + "~mv2.jpg/v1/fill/w_" + w + ",h_" + h + ",al_c,q_80,enc_auto/foto.jpg";
+const img = (id, w, h) => /^(\/|http)/.test(id) ? (id.startsWith("/") ? SITE + id : id) : "https://static.wixstatic.com/media/ad50e8_" + id + "~mv2.jpg/v1/fill/w_" + w + ",h_" + h + ",al_c,q_80,enc_auto/foto.jpg";
 const wa = (t) => "https://wa.me/" + WA + "?text=" + encodeURIComponent(t);
 const slug = (e) => e.id;
 const local = (e) => [e.bairro && e.bairro !== e.cidade ? e.bairro : "", e.cidade + "/SC"].filter(Boolean).join(", ");
@@ -463,7 +476,7 @@ const PESSOA = {
 {
   const emps = EMPS.map((e) => ({ id: e.id, nome: e.nome, incorp: e.incorp, cidade: e.cidade, bairro: e.bairro, endereco: e.endereco,
     status: e.status, entrega: e.entrega || "", pronto: !!e.pronto, tabela: e.tabela || "", correcao: e.correcao || "", aviso: e.aviso || "",
-    consulta: !!e.consulta, url: "/imoveis/" + slug(e) + "/" }));
+    consulta: !!e.consulta, aPartir: e.aPartir || 0, url: "/imoveis/" + slug(e) + "/" }));
   const units = UNITS.map((u) => ({ id: u.emp + "-" + u.key, emp: u.emp, un: u.un, quartos: u.quartos, area: u.area, vaga: u.vaga || "",
     pos: u.pos || "", valor: u.valor, mar: u.mar || null, fluxos: u.fluxos }));
   fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
