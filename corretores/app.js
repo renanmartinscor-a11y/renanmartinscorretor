@@ -436,12 +436,12 @@ function mostrarPedidos() {
   const n = PED.filter((m) => !m.enviado).length;
   $("#kPend").textContent = n;
   $("#tabLeads").textContent = n ? `Área do dono (${n} pedido${n > 1 ? "s" : ""})` : "Área do dono";
-  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Nenhum pedido esperando. Quando um corretor se cadastrar, ele aparece aqui em poucos minutos.</div>'; return; }
+  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Nenhum pedido esperando. Quando um corretor se cadastrar, ele aparece aqui em até 1 hora (e o Wix também te avisa por e-mail).</div>'; return; }
   $("#pList").innerHTML = PED.map((m) => {
     const quando = m.pedidoEm ? new Date(m.pedidoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
     return `<div class="ped"><div class="av">${esc((m.title || "?").trim().charAt(0).toUpperCase())}</div>
       <div><b>${esc(m.title)}</b><br><span class="note">${esc(m.email || "")}${m.celular ? " · " + esc(m.celular) : ""}${m.creci ? " · CRECI " + esc(m.creci) : ""}${quando ? " · pediu em " + esc(quando) : ""}</span></div><span class="sp"></span>
-      ${m.enviado ? '<span class="tag">✓ aprovado · liberando em instantes</span>' : `<button class="btn ok" data-apr="${esc(m.memberId)}">✓ Aprovar</button>`}</div>`;
+      ${m.enviado ? '<span class="tag">✓ aprovado · libera em até 1 hora</span>' : `<button class="btn ok" data-apr="${esc(m.memberId)}">✓ Aprovar</button>`}</div>`;
   }).join("");
   $$("[data-apr]").forEach((b) => b.addEventListener("click", () => aprovar(b.dataset.apr, b)));
 }
