@@ -15,7 +15,10 @@ const WA = "5547992011013";
   const MARK = "EMPS.forEach(e=>{e.imgs=IMGS[e.id]||[];});";
   if (!h0.includes("/* extra-emps */") && h0.includes(MARK)) {
     const extra = fs.readFileSync(path.join(ROOT, "tools", "extra-emps.js"), "utf8");
-    h0 = h0.replace(MARK, "/* extra-emps */var MAPQ_EXTRA={};\n" + extra + "\n" + MARK);
+    const [parte1, parte2] = extra.split("//--IMGS--");
+    const MARK_EMP = "const EMP = Object.fromEntries(EMPS.map(e=>[e.id,e]));";
+    if (h0.includes(MARK_EMP)) { h0 = h0.replace(MARK_EMP, "/* extra-emps-1 */\n" + parte1 + "\n" + MARK_EMP); h0 = h0.replace(MARK, "/* extra-emps */var MAPQ_EXTRA={};\n" + (parte2 || "") + "\n" + MARK); }
+    else h0 = h0.replace(MARK, "/* extra-emps */var MAPQ_EXTRA={};\n" + extra + "\n" + MARK);
     h0 = h0.replace("Object.assign(MAPQ,{", "Object.assign(MAPQ,MAPQ_EXTRA);Object.assign(MAPQ,{");
   }
   h0 = h0.replace("const im=(id,w,h)=>W+id+", "const im=(id,w,h)=>/^(\\/|http)/.test(id)?id:W+id+");
