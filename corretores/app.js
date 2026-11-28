@@ -56,24 +56,29 @@ function render(st) {
   const on = st.loggedIn && st.member;
   $("#vAuth").classList.toggle("hid", !!on);
   $("#vApp").classList.toggle("hid", !on);
-  $("#sair").classList.toggle("hid", !on);
+  $("#mBtn").classList.toggle("hid", !on);
   $("#who").textContent = on ? nomeDo(st.member) : "";
   if (on) {
     $("#tabLeads").classList.toggle("hid", emailDo(st.member) !== DONO);
     const perfil = lerPerfil();
     if (!perfil.nome) { $("#cNome").value = nomeDo(st.member); salvarPerfil(); }
-    if (!iniciado) { iniciado = true; iniciar(); }
+    if (!iniciado) { iniciado = true; iniciar(); abrirAba("apres"); }
   }
 }
 subscribeMember(render);
 render(getMemberState());
 
 /* ---------------- abas ---------------- */
-$$("#tabs button").forEach((b) => b.addEventListener("click", () => abrirAba(b.dataset.t)));
+$$("#tabs button[data-t]").forEach((b) => b.addEventListener("click", () => { abrirAba(b.dataset.t); menu(false); }));
+function menu(abrir) { $("#tabs").classList.toggle("hid", !abrir); $("#mBtn").setAttribute("aria-expanded", abrir ? "true" : "false"); }
+$("#mBtn").addEventListener("click", (ev) => { ev.stopPropagation(); menu($("#tabs").classList.contains("hid")); });
+document.addEventListener("click", (ev) => { if (!ev.target.closest("#tabs")) menu(false); });
 function abrirAba(t) {
-  $$("#tabs button").forEach((x) => x.classList.toggle("on", x.dataset.t === t));
+  $$("#tabs button[data-t]").forEach((x) => x.classList.toggle("on", x.dataset.t === t));
+  const b = $(`#tabs button[data-t="${t}"]`); $("#secAt").textContent = b ? "· " + b.textContent : "";
   $$("[data-p]").forEach((p) => p.classList.toggle("hid", p.dataset.p !== t));
   if (t === "materiais") carregarMateriais();
+  if (t === "leads") carregarLeads();
 }
 
 async function iniciar() {
@@ -335,3 +340,44 @@ function slidesVenda(i) {
   S.push(slideContato(""));
   return S;
 }
+
+/* ---------------- leads (só o dono) ---------------- */
+let LEADS = null;
+async function carregarLeads(forcar) {
+  if (LEADS && !forcar) return mostrarLeads();
+  $("#lInfo").textContent = "Carregando…";
+  try {
+    const L = []; let off = 0;
+    for (;;) {
+      const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "LeadsSite", query: { sort: [{ fieldName: "_createdDate", order: "DESC" }], paging: { limit: 100, offset: off } } } });
+      const it = (r.dataItems || []).map((i) => i.data); L.push(...it);
+      if (it.length < 100 || L.length >= 2000) break; off += 100;
+    }
+    LEADS = L; mostrarLeads();
+  } catch (e) {
+    $("#lInfo").innerHTML = 'Não consegui abrir a lista aqui. Use o botão "Abrir leads no painel do Wix" logo abaixo.';
+    $("#lTab").innerHTML = "";
+  }
+}
+function linhasLeads() {
+  const q = norm($("#lq").value).split(/\s+/).filter(Boolean);
+  return (LEADS || []).filter((l) => { const h = norm([l.title, l.email, l.cidade, l.mensagem, l.pagina, l.tipo].join(" ")); return q.every((w) => h.includes(w)); });
+}
+const dataHora = (d) => { try { return new Date(d.$date || d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }); } catch { return ""; } };
+function mostrarLeads() {
+  const L = linhasLeads();
+  const pessoas = new Set((LEADS || []).map((l) => (l.email || "").toLowerCase()).filter(Boolean)).size;
+  $("#lInfo").textContent = `${(LEADS || []).length} contatos · ${pessoas} pessoas diferentes${L.length !== (LEADS || []).length ? ` · ${L.length} no filtro` : ""}`;
+  $("#lTab").innerHTML = `<thead><tr><th>Quando</th><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Tipo</th><th>Mensagem / imóvel</th></tr></thead><tbody>` +
+    L.map((l) => `<tr><td style="white-space:nowrap">${esc(dataHora(l._createdDate))}</td><td>${esc(l.title)}</td><td>${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ""}</td><td>${esc(l.cidade)}</td><td>${esc(l.tipo || "Primeiro contato")}</td><td style="max-width:360px">${esc((l.mensagem || "").slice(0, 220))}<br><span class="note">${esc(l.pagina || "")}</span></td></tr>`).join("") + "</tbody>";
+}
+$("#lq").addEventListener("input", () => LEADS && mostrarLeads());
+$("#lAtual").addEventListener("click", () => carregarLeads(true));
+$("#lCsv").addEventListener("click", () => {
+  const c = (s) => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+  const out = [["Quando", "Nome", "E-mail", "Cidade", "Tipo", "Mensagem", "Página"].map(c).join(";")]
+    .concat(linhasLeads().map((l) => [dataHora(l._createdDate), l.title, l.email, l.cidade, l.tipo || "Primeiro contato", l.mensagem, l.pagina].map(c).join(";")));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + out.join("\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = "leads-site.csv"; a.click();
+});

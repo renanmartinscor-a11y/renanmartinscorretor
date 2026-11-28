@@ -1,6 +1,7 @@
 /* Formulário de primeiro contato antes do WhatsApp (Renan Martins Corretor).
    Na primeira vez que a pessoa clica em qualquer botão de WhatsApp, pede nome, e-mail e cidade.
-   Os dados vão junto na mensagem do WhatsApp. Nas próximas vezes, abre o WhatsApp direto. */
+   Os dados vão junto na mensagem do WhatsApp. Nas próximas vezes, abre o WhatsApp direto.
+   Todo contato pelo WhatsApp fica salvo na lista de leads (Área do dono). */
 (function () {
   var KEY = "rm_lead_v1";
   var NUM = "5547992011013";
@@ -41,6 +42,21 @@
   box.addEventListener("click", function (e) { if (e.target === box) close(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !box.hidden) close(); });
 
+  // Salva cada contato pelo WhatsApp na lista de leads do Renan (Wix CMS "LeadsSite")
+  function salvar(L, href, tipo) {
+    try {
+      var txt = ""; try { txt = new URL(href).searchParams.get("text") || ""; } catch (x) {}
+      var chave = "rm_lead_ult", agora = Date.now(), ult = null;
+      try { ult = JSON.parse(sessionStorage.getItem(chave) || "null"); } catch (x) {}
+      if (ult && ult.t === txt && agora - ult.q < 10 * 60 * 1000) return; // mesmo botão em menos de 10 min
+      try { sessionStorage.setItem(chave, JSON.stringify({ t: txt, q: agora })); } catch (x) {}
+      import("/js/wix/client.js").then(function (wx) {
+        return wx.wixRequest("/wix-data/v2/items", { method: "POST", body: { dataCollectionId: "LeadsSite", dataItem: { data: {
+          title: L.nome, email: L.email, cidade: L.cidade, pagina: location.pathname, mensagem: txt, tipo: tipo } } } });
+      }).catch(function () {});
+    } catch (x) {}
+  }
+
   function withData(href, L) {
     var u; try { u = new URL(href); } catch (e) { return href; }
     var t = u.searchParams.get("text") || "Olá Renan, vim pelo seu site.";
@@ -57,24 +73,19 @@
     if (c.length < 2) { er.textContent = "Preencha sua cidade."; return; }
     var L = { nome: n, email: m, cidade: c, quando: new Date().toISOString() };
     setLead(L);
-    var origem = pend || "";
-    try {
-      var emailLead = m;
-      import("/js/wix/client.js").then(function (wx) {
-        var txt = ""; try { txt = new URL(origem).searchParams.get("text") || ""; } catch (x) {}
-        return wx.wixRequest("/wix-data/v2/items", { method: "POST", body: { dataCollectionId: "LeadsSite", dataItem: { data: { title: n, email: emailLead, cidade: c, pagina: location.pathname, mensagem: txt } } } });
-      }).catch(function () {});
-    } catch (x) {}
+    salvar(L, pend || "", "Primeiro contato (formulário + WhatsApp)");
     var href = withData(pend || "https://wa.me/" + NUM, L);
     box.hidden = true; pend = null;
     if (window.fbq) try { fbq("track", "Lead"); } catch (x) {}
     if (window.gtag) try { gtag("event", "generate_lead"); } catch (x) {}
-    window.open(href, "_blank", "noopener") || (location.href = href);
+    (wo || window.open).call(window, href, "_blank", "noopener") || (location.href = href);
   });
 
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a");
-    if (!isWa(a) || getLead()) return;
+    if (!isWa(a)) return;
+    var L0 = getLead();
+    if (L0) { salvar(L0, a.href, "Novo contato pelo WhatsApp"); return; }
     e.preventDefault(); e.stopPropagation();
     pend = a.href; box.hidden = false;
     setTimeout(function () { box.querySelector("#rmN").focus(); }, 30);
@@ -83,6 +94,7 @@
   // Links abertos por script (ex.: window.open(wa(...))) também passam pelo formulário
   var wo = window.open;
   window.open = function (u) {
+    if (typeof u === "string" && u.indexOf("wa.me/" + NUM) > -1 && getLead()) salvar(getLead(), u, "Novo contato pelo WhatsApp");
     if (typeof u === "string" && u.indexOf("wa.me/" + NUM) > -1 && !getLead() && box.hidden) {
       pend = u; box.hidden = false; return null;
     }
