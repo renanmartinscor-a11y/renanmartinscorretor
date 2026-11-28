@@ -394,13 +394,13 @@ async function carregarLeads(forcar) {
   try {
     const L = []; let off = 0;
     for (;;) {
-      const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "LeadsSite", query: { sort: [{ fieldName: "_createdDate", order: "DESC" }], paging: { limit: 100, offset: off } } } });
+      const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "LeadsDono", query: { sort: [{ fieldName: "quando", order: "DESC" }], paging: { limit: 100, offset: off } } } });
       const it = (r.dataItems || []).map((i) => i.data); L.push(...it);
       if (it.length < 100 || L.length >= 2000) break; off += 100;
     }
     LEADS = L; mostrarLeads();
   } catch (e) {
-    $("#lInfo").innerHTML = 'Não consegui abrir a lista aqui. Use o botão "Abrir leads no painel do Wix" logo abaixo.';
+    $("#lInfo").innerHTML = 'Não consegui abrir a lista agora. Tente "Atualizar" daqui a pouco.';
     $("#lTab").innerHTML = "";
   }
 }
@@ -415,14 +415,14 @@ function mostrarLeads() {
   $("#lInfo").textContent = `${(LEADS || []).length} contatos · ${pessoas} pessoas diferentes${L.length !== (LEADS || []).length ? ` · ${L.length} no filtro` : ""}`;
   $("#kLeads").textContent = (LEADS || []).length; $("#kPess").textContent = pessoas;
   $("#lTab").innerHTML = `<thead><tr><th>Quando</th><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Tipo</th><th>Mensagem / imóvel</th></tr></thead><tbody>` +
-    L.map((l) => `<tr><td style="white-space:nowrap">${esc(dataHora(l._createdDate))}</td><td>${esc(l.title)}</td><td>${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ""}</td><td>${esc(l.cidade)}</td><td>${esc(l.tipo || "Primeiro contato")}</td><td style="max-width:360px">${esc((l.mensagem || "").slice(0, 220))}<br><span class="note">${esc(l.pagina || "")}</span></td></tr>`).join("") + "</tbody>";
+    L.map((l) => `<tr><td style="white-space:nowrap">${esc(dataHora(l.quando || l._createdDate))}</td><td>${esc(l.title)}</td><td>${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ""}</td><td>${esc(l.cidade)}</td><td>${esc(l.tipo || "Primeiro contato")}</td><td style="max-width:360px">${esc((l.mensagem || "").slice(0, 220))}<br><span class="note">${esc(l.pagina || "")}</span></td></tr>`).join("") + "</tbody>";
 }
 $("#lq").addEventListener("input", () => LEADS && mostrarLeads());
 $("#lAtual").addEventListener("click", () => carregarLeads(true));
 $("#lCsv").addEventListener("click", () => {
   const c = (s) => '"' + String(s ?? "").replace(/"/g, '""') + '"';
   const out = [["Quando", "Nome", "E-mail", "Cidade", "Tipo", "Mensagem", "Página"].map(c).join(";")]
-    .concat(linhasLeads().map((l) => [dataHora(l._createdDate), l.title, l.email, l.cidade, l.tipo || "Primeiro contato", l.mensagem, l.pagina].map(c).join(";")));
+    .concat(linhasLeads().map((l) => [dataHora(l.quando || l._createdDate), l.title, l.email, l.cidade, l.tipo || "Primeiro contato", l.mensagem, l.pagina].map(c).join(";")));
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob(["﻿" + out.join("\n")], { type: "text/csv;charset=utf-8" }));
   a.download = "leads-site.csv"; a.click();
