@@ -135,7 +135,7 @@ td.v,th.v{text-align:right;white-space:nowrap}
           <div><label>CRECI</label><input id="upCreci" required placeholder="Ex.: 12345F"></div></div>
         <label>Crie uma senha</label><input type="password" id="upSenha" minlength="6" required autocomplete="new-password">
         <div id="capBox" style="margin-top:14px;min-height:78px"></div>
-        <p><button class="btn" style="width:100%">Criar cadastro</button></p>
+        <p><button class="btn" style="width:100%">Criar cadastro e entrar</button></p>
         <p class="note">Ferramenta exclusiva para corretores. É preciso ter cadastro para acessar.</p>
       </form>
       <form id="fCod" class="hid">
@@ -213,12 +213,12 @@ td.v,th.v{text-align:right;white-space:nowrap}
     <div class="hid" data-p="leads">
       <div class="dono-top">
         <div><span class="kk">Área do dono</span><h2 style="margin:2px 0 0">Olá, Renan</h2><p class="note" style="margin:4px 0 0">Só você vê esta área.</p></div>
-        <div class="kpis"><div class="kpi"><b id="kPend">–</b><span>pedidos</span></div><div class="kpi"><b id="kLeads">–</b><span>leads</span></div><div class="kpi"><b id="kPess">–</b><span>pessoas</span></div></div>
+        <div class="kpis"><div class="kpi"><b id="kPend">–</b><span>corretores</span></div><div class="kpi"><b id="kLeads">–</b><span>leads</span></div><div class="kpi"><b id="kPess">–</b><span>pessoas</span></div></div>
       </div>
 
       <div class="card dcard">
-        <div class="dh"><h3>Pedidos de acesso</h3><button class="btn o s" id="pAtual">Atualizar</button></div>
-        <p class="note" style="margin-top:0">Quem pediu acesso à Área do Corretor. É só clicar em Aprovar: o acesso é liberado automaticamente em até 1 hora e o corretor recebe um e-mail.</p>
+        <div class="dh"><h3>Corretores cadastrados</h3><button class="btn o s" id="pAtual">Atualizar</button></div>
+        <p class="note" style="margin-top:0">Quem se cadastrou na Área do Corretor entra direto. Se não quiser alguém, clique em Remover: a pessoa perde o acesso.</p>
         <div id="pList"></div>
       </div>
 
@@ -244,6 +244,6 @@ td.v,th.v{text-align:right;white-space:nowrap}
   </div>
 </div>
 <script src="https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=pt-BR" async defer></script>
-<script type="module" src="/corretores/app.js?v=4f13a264"></script>
+<script type="module" src="/corretores/app.js?v=53f671b3"></script>
 </body>
 </html>

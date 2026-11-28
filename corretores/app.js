@@ -1,5 +1,6 @@
 import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js/wix/member-store.js";
-import { wixRequest, WixApiError } from "/js/wix/client.js";
+import { wixRequest, WixApiError, setTokens } from "/js/wix/client.js";
+import { memberTokensForSession } from "/js/wix/auth.js";
 import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
 import * as AP from "/js/apres.js?v=e8afc539";
 
@@ -11,7 +12,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const mesAno = (e) => (e && /^\d{4}-\d{2}/.test(e) ? e.slice(5, 7) + "/" + e.slice(0, 4) : e || "");
 
-let DADOS = null, iniciado = false, PED = null, perfilCarregado = false, PERFIL_ID = null, MEU = { nome: "", creci: "", wpp: "" };
+let NOVO = null, DADOS = null, iniciado = false, PED = null, perfilCarregado = false, PERFIL_ID = null, MEU = { nome: "", creci: "", wpp: "" };
 
 /* ---------------- login ---------------- */
 function msg(html, tipo = "i") { $("#authMsg").innerHTML = html ? `<div class="msg ${tipo}">${html}</div>` : ""; }
@@ -58,7 +59,12 @@ function resetCaptcha() { capTok = ""; try { window.grecaptcha.enterprise.reset(
 async function resultadoAuth(raw) {
   const o = authOutcome(raw);
   if (o.stateToken) estadoCad = o.stateToken;
-  if (o.state === "SUCCESS") { location.reload(); return { state: "SUCCESS" }; }
+  if (o.state === "SUCCESS" && o.sessionToken) {
+    msg("Cadastro feito! Entrando…", "ok");
+    setTokens(await memberTokensForSession(o.sessionToken));
+    if (NOVO) { try { await wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "PerfilCorretor", dataItem: { data: NOVO } } }); } catch (e) {} }
+    location.reload(); return { state: "SUCCESS" };
+  }
   return toLoginResult(o);
 }
 $("#fUp").addEventListener("submit", async (ev) => {
@@ -71,6 +77,7 @@ $("#fUp").addEventListener("submit", async (ev) => {
   const body = { loginId: { email: $("#upEmail").value.trim() }, password: $("#upSenha").value,
     profile: { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() }, captcha_tokens: [{ Recaptcha: capTok }] };
   const nomeCad = ($("#upNome").value.trim() + " " + $("#upSob").value.trim()).trim();
+  NOVO = { title: nomeCad, email: $("#upEmail").value.trim().toLowerCase(), celular: cel, creci };
   wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "CadastroCorretor", dataItem: { data: { title: nomeCad, email: $("#upEmail").value.trim().toLowerCase(), celular: cel, creci } } } }).catch(() => {});
   try { tratar(await resultadoAuth(await wixRequest("/_api/iam/authentication/v2/register", { body })), "up"); }
   catch (e) { tratar({ errorCode: (e instanceof WixApiError && registerErrorCode(e.code, e.details)) || e?.code || "erro" }, "up"); }
@@ -445,38 +452,31 @@ async function carregarPedidos() {
   $("#pList").innerHTML = '<div class="vazio">Carregando…</div>';
   try {
     const [r, d] = await Promise.all([
-      wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PedidosAcesso", query: { paging: { limit: 100 } } } }),
-      wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "DecisoesAcesso", query: { paging: { limit: 100 }, sort: [{ fieldName: "_createdDate", order: "DESC" }] } } }),
+      wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "CorretoresLista", query: { paging: { limit: 200 } } } }),
+      wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "DecisoesAcesso", query: { paging: { limit: 100 } } } }),
     ]);
-    const enviados = new Set((d.dataItems || []).filter((x) => x.data.processado !== "sim").map((x) => x.data.memberId));
-    PED = (r.dataItems || []).map((x) => ({ ...x.data, enviado: enviados.has(x.data.memberId) }));
+    const saindo = new Set((d.dataItems || []).filter((x) => x.data.title === "remover" && x.data.processado !== "sim").map((x) => x.data.memberId));
+    PED = (r.dataItems || []).map((x) => ({ ...x.data, saindo: saindo.has(x.data.memberId) })).sort((a, b) => String(b.desde).localeCompare(String(a.desde)));
     mostrarPedidos();
   } catch (e) {
     $("#kPend").textContent = "?";
-    $("#pList").innerHTML = `<div class="vazio">Não consegui abrir os pedidos agora. Tente "Atualizar" daqui a pouco.<br><small>(${esc(e?.status || "")})</small></div>`;
+    $("#pList").innerHTML = `<div class="vazio">Não consegui abrir a lista agora. Tente "Atualizar" daqui a pouco.</div>`;
   }
 }
 function mostrarPedidos() {
-  const n = PED.filter((m) => !m.enviado).length;
-  $("#kPend").textContent = n;
-  $("#tabLeads").textContent = n ? `Área do dono (${n} pedido${n > 1 ? "s" : ""})` : "Área do dono";
-  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Nenhum pedido esperando. Quando um corretor se cadastrar, ele aparece aqui em até 1 hora (e o Wix também te avisa por e-mail).</div>'; return; }
-  $("#pList").innerHTML = PED.map((m) => {
-    const quando = m.pedidoEm ? new Date(m.pedidoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
-    return `<div class="ped"><div class="av">${esc((m.title || "?").trim().charAt(0).toUpperCase())}</div>
-      <div><b>${esc(m.title)}</b><br><span class="note">${esc(m.email || "")}${m.celular ? " · " + esc(m.celular) : ""}${m.creci ? " · CRECI " + esc(m.creci) : ""}${quando ? " · pediu em " + esc(quando) : ""}</span></div><span class="sp"></span>
-      ${m.enviado ? '<span class="tag">✓ aprovado · libera em até 1 hora</span>' : `<button class="btn ok" data-apr="${esc(m.memberId)}">✓ Aprovar</button>`}</div>`;
-  }).join("");
-  $$("[data-apr]").forEach((b) => b.addEventListener("click", () => aprovar(b.dataset.apr, b)));
+  $("#kPend").textContent = PED.filter((m) => !m.saindo).length;
+  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Ainda não há corretores cadastrados. Quem se cadastrar aparece aqui em até 1 hora.</div>'; return; }
+  const dt = (x) => (x ? new Date(x).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "");
+  $("#pList").innerHTML = PED.map((m) => `<div class="ped"><div class="av">${esc((m.title || "?").trim().charAt(0).toUpperCase())}</div>
+      <div><b>${esc(m.title)}</b><br><span class="note">${esc(m.email || "")}${m.celular ? " · " + esc(m.celular) : ""}${m.creci ? " · CRECI " + esc(m.creci) : ""}${m.desde ? " · desde " + esc(dt(m.desde)) : ""}${m.ultimoAcesso ? " · último acesso " + esc(dt(m.ultimoAcesso)) : ""}</span></div><span class="sp"></span>
+      ${m.saindo ? '<span class="tag">removido · perde o acesso em até 1 hora</span>' : `<button class="btn no s" data-rem="${esc(m.memberId)}" data-nome="${esc(m.title)}">✕ Remover</button>`}</div>`).join("");
+  $$("[data-rem]").forEach((b) => b.addEventListener("click", () => { if (confirm(`Remover ${b.dataset.nome} da Área do Corretor? Essa pessoa perde o acesso.`)) remover(b.dataset.rem, b); }));
 }
-async function aprovar(id, btn) {
-  btn.disabled = true; btn.textContent = "Aprovando…";
+async function remover(id, btn) {
+  btn.disabled = true; btn.textContent = "Removendo…";
   try {
-    await wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "DecisoesAcesso", dataItem: { data: { title: "aprovar", memberId: id, processado: "" } } } });
-    PED = PED.map((m) => (m.memberId === id ? { ...m, enviado: true } : m)); mostrarPedidos();
-  } catch (e) {
-    btn.disabled = false; btn.textContent = "✓ Aprovar";
-    alert("Não consegui registrar a aprovação. Tente de novo.");
-  }
+    await wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "DecisoesAcesso", dataItem: { data: { title: "remover", memberId: id, processado: "" } } } });
+    PED = PED.map((m) => (m.memberId === id ? { ...m, saindo: true } : m)); mostrarPedidos();
+  } catch (e) { btn.disabled = false; btn.textContent = "✕ Remover"; alert("Não consegui registrar. Tente de novo."); }
 }
 $("#pAtual").addEventListener("click", carregarPedidos);
