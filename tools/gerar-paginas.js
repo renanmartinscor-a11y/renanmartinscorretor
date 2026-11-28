@@ -464,6 +464,17 @@ const PESSOA = {
     pos: u.pos || "", valor: u.valor, mar: u.mar || null, fluxos: u.fluxos }));
   fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
   fs.writeFileSync(path.join(ROOT, "data", "corretores.json"), JSON.stringify({ gerado: new Date().toISOString(), emps, units }));
+  // Apresentação rápida (só o que já está no site)
+  const apEmps = EMPS.map((e) => ({ id: e.id, resumo: e.resumo || "", ficha: e.ficha || [], lazer: e.lazer || [], dif: e.dif || [],
+    condicoes: e.condicoes || [], fotos: (e.imgs || []).map((i) => img(i, 1600, 1000)) }));
+  const apVenda = VENDA.map((g) => {
+    const c = g.it.campos || {};
+    const info = ["Tipo de Imóvel", "Estágio do Imóvel", "Quartos", "Banheiros", "Vagas", "Área Privada", "Área Útil", "Área Total", "Terreno"]
+      .filter((k) => c[k]).map((k) => [k, String(c[k]).replace(/^.*»\s*/, "")]);
+    return { id: "v-" + g.it.id, nome: g.nome, tipo: g.tipo, local: g.local, endereco: g.it.endereco || "", valor: Number(g.it.preco) || 0,
+      descricao: g.it.descricao || "", info, comodidades: g.it.comodidades || [], fotos: g.it.fotos || [], url: g.url.replace(SITE, "") };
+  });
+  fs.writeFileSync(path.join(ROOT, "data", "apresentacao.json"), JSON.stringify({ gerado: new Date().toISOString(), emps: apEmps, venda: apVenda }));
 }
 
 // ---------- 6d. Formulário de primeiro contato em todas as páginas ----------

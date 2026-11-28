@@ -41,6 +41,33 @@ td.v,th.v{text-align:right;white-space:nowrap}
 .emp .sp{flex:1}
 .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#F3EEDF;color:#6A5420;margin-right:4px}
 .mat{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--l)}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
+.acard{border:1px solid var(--l);border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;text-align:left;padding:0;font:inherit;color:inherit}
+.acard:hover{border-color:var(--g)}
+.acard .im{aspect-ratio:16/10;background:#DCD5C4 center/cover}
+.acard .tx{padding:10px 12px}.acard b{font-family:Marcellus,serif;font-weight:400;font-size:17px;color:var(--n);display:block}
+.acard small{color:var(--m)}
+#show{position:fixed;inset:0;background:var(--n);color:#fff;z-index:50;display:flex;flex-direction:column}
+#show .top{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:14px}
+#show .top .sp{flex:1}.shsec{display:flex;gap:6px;overflow-x:auto;margin-left:10px}.shsec .btn{white-space:nowrap;border-color:rgba(255,255,255,.35)}#show .top{flex-wrap:nowrap}
+#show .stage{flex:1;position:relative;overflow:hidden}
+.sl{position:absolute;inset:0;display:none;padding:28px 6vw;overflow:auto}
+.sl.on{display:flex;flex-direction:column;justify-content:center}
+.sl.foto{padding:0;background:#0B1528 center/contain no-repeat}
+.sl.capa{background:#0B1528 center/cover no-repeat;justify-content:flex-end}
+.sl.capa .cx{background:linear-gradient(transparent,rgba(10,20,40,.92));margin:0 -6vw -28px;padding:60px 6vw 34px}
+.sl h1{font-size:clamp(30px,5vw,58px);color:#fff;margin:.1em 0}
+.sl h2{font-size:clamp(24px,3.4vw,40px);color:var(--g2)}
+.sl .k{color:var(--g2);text-transform:uppercase;letter-spacing:.14em;font-size:13px}
+.sl p,.sl li{font-size:clamp(16px,1.8vw,21px);line-height:1.5}
+.sl ul{columns:2;column-gap:40px;padding-left:20px}
+.sl .big{font-size:clamp(28px,4vw,46px);font-family:Marcellus,serif;color:var(--g2)}
+.sl table td,.sl table th{border-color:rgba(255,255,255,.15);color:#fff;background:transparent;font-size:clamp(15px,1.6vw,19px)}
+.sl .aviso{font-size:13px;opacity:.75;margin-top:18px}
+.nv{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.35);border:0;color:#fff;font-size:34px;width:52px;height:72px;cursor:pointer;border-radius:8px;z-index:2}
+.nv.p{left:8px}.nv.n{right:8px}
+@media(max-width:700px){.sl ul{columns:1}#shT{display:none}.nv{width:40px;height:56px;font-size:26px}}
+@media print{#show{display:none!important}}
 @media print{header,.tabs,.noprint{display:none!important}body{background:#fff}.card{border:0;padding:0}.tw{max-height:none}}
 </style>
 </head>
@@ -83,14 +110,22 @@ td.v,th.v{text-align:right;white-space:nowrap}
   <!-- Área logada -->
   <section id="vApp" class="hid">
     <div class="tabs" id="tabs">
-      <button data-t="busca" class="on">Buscar empreendimento</button>
+      <button data-t="apres" class="on">Apresentação</button>
+      <button data-t="busca">Buscar empreendimento</button>
       <button data-t="tabelas">Tabelas</button>
       <button data-t="proposta">Proposta / simulação</button>
       <button data-t="materiais">Materiais</button>
       <button data-t="leads" class="hid" id="tabLeads">Leads e acessos</button>
     </div>
 
-    <div class="card" data-p="busca">
+    <div class="card" data-p="apres">
+      <h2>Apresentação rápida</h2>
+      <input id="aq" placeholder="Nome do imóvel ou empreendimento (ex.: Babitonga, casa geminada, Milão)…" autocomplete="off" style="font-size:17px;padding:14px">
+      <div id="arec"></div>
+      <div id="ares" class="agrid"></div>
+    </div>
+
+    <div class="card hid" data-p="busca">
       <h2>Buscar empreendimento</h2>
       <input id="bq" placeholder="Digite o nome (ex.: Babitonga, Bossa, Maui)…" autocomplete="off">
       <div id="bres"></div>
@@ -144,6 +179,11 @@ td.v,th.v{text-align:right;white-space:nowrap}
     </div>
   </section>
 </main>
+<div id="show" class="hid">
+  <div class="top"><b id="shT"></b><span id="shSec" class="shsec"></span><span class="sp"></span><span id="shN"></span>
+    <button class="btn o s" id="shFs">Tela cheia</button><button class="btn s" id="shX">Fechar ✕</button></div>
+  <div class="stage" id="stage"><button class="nv p" id="shP">‹</button><button class="nv n" id="shNx">›</button></div>
+</div>
 <script type="module" src="/corretores/app.js"></script>
 </body>
 </html>

@@ -97,6 +97,7 @@ async function iniciar() {
   ["pCli", "pObs"].forEach((id) => $("#" + id).addEventListener("input", previa));
   $("#pGerar").addEventListener("click", gerarPdf);
   unidades();
+  iniciarApres();
 }
 const emp = (id) => DADOS.emps.find((e) => e.id === id);
 
@@ -223,4 +224,114 @@ async function carregarMateriais() {
   } catch (e) {
     $("#mList").innerHTML = '<div class="msg e">Não foi possível carregar os materiais. Saia e entre de novo.</div>';
   }
+}
+
+/* ---------------- apresentação ---------------- */
+let AP = null, ITENS = [], SL = [], cur = 0;
+async function iniciarApres() {
+  try { AP = await (await fetch("/data/apresentacao.json", { cache: "no-store" })).json(); } catch { $("#ares").innerHTML = '<div class="msg e">Não foi possível carregar.</div>'; return; }
+  const extra = Object.fromEntries(AP.emps.map((e) => [e.id, e]));
+  ITENS = DADOS.emps.map((e) => ({ k: "e", id: e.id, nome: e.nome, sub: `${e.incorp} · ${e.bairro}, ${e.cidade}`, capa: extra[e.id]?.fotos?.[0] || "",
+      preco: e._units.length ? "a partir de " + brl(e._min) : "valores sob consulta", e, x: extra[e.id] || {} }))
+    .concat(AP.venda.map((v) => ({ k: "v", id: v.id, nome: v.nome, sub: [v.tipo, v.local].filter(Boolean).join(" · "), capa: v.fotos[0] || "",
+      preco: v.valor >= 10000 ? brl(v.valor) : "valor sob consulta", v })));
+  $("#aq").addEventListener("input", listarApres);
+  $("#aq").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const f = $("#ares .acard"); if (f) f.click(); } });
+  listarApres();
+  $("#shX").addEventListener("click", fechar);
+  $("#shP").addEventListener("click", () => ir(cur - 1));
+  $("#shNx").addEventListener("click", () => ir(cur + 1));
+  $("#shFs").addEventListener("click", () => { const el = $("#show"); if (!document.fullscreenElement) el.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); });
+  document.addEventListener("keydown", (ev) => {
+    if ($("#show").classList.contains("hid")) return;
+    if (ev.key === "ArrowRight" || ev.key === " ") { ev.preventDefault(); ir(cur + 1); }
+    if (ev.key === "ArrowLeft") ir(cur - 1);
+    if (ev.key === "Escape" && !document.fullscreenElement) fechar();
+  });
+  let x0 = null;
+  $("#stage").addEventListener("touchstart", (ev) => { x0 = ev.touches[0].clientX; }, { passive: true });
+  $("#stage").addEventListener("touchend", (ev) => { if (x0 == null) return; const dx = ev.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) ir(cur + (dx < 0 ? 1 : -1)); x0 = null; });
+}
+function cardHtml(i) {
+  return `<button class="acard" data-ap="${i.id}"><div class="im" style="background-image:url('${esc(i.capa)}')"></div><div class="tx"><b>${esc(i.nome)}</b><small>${esc(i.sub)}<br>${esc(i.preco)}</small></div></button>`;
+}
+function listarApres() {
+  const q = norm($("#aq").value).split(/\s+/).filter(Boolean);
+  let L = ITENS.filter((i) => { const h = norm([i.nome, i.sub, i.v?.descricao?.slice(0, 200)].join(" ")); return q.every((w) => h.includes(w)); });
+  if (!q.length) L = L.filter((i) => i.k === "e");
+  $("#ares").innerHTML = L.slice(0, 60).map(cardHtml).join("") || '<p class="note">Nada encontrado com esse nome.</p>';
+  let rec = []; try { rec = JSON.parse(localStorage.getItem("rm_apres_rec") || "[]"); } catch {}
+  const R = rec.map((id) => ITENS.find((i) => i.id === id)).filter(Boolean);
+  $("#arec").innerHTML = !q.length && R.length ? `<p class="note" style="margin:12px 0 0">Abertos recentemente: ${R.map((i) => `<a href="#" data-ap="${i.id}">${esc(i.nome)}</a>`).join(" · ")}</p>` : "";
+  $$("[data-ap]").forEach((b) => b.addEventListener("click", (ev) => { ev.preventDefault(); abrirApres(b.dataset.ap); }));
+}
+function abrirApres(id) {
+  const i = ITENS.find((x) => x.id === id); if (!i) return;
+  try { let r = JSON.parse(localStorage.getItem("rm_apres_rec") || "[]"); r = [id, ...r.filter((x) => x !== id)].slice(0, 6); localStorage.setItem("rm_apres_rec", JSON.stringify(r)); } catch {}
+  SL = i.k === "e" ? slidesEmp(i) : slidesVenda(i);
+  $$("#stage .sl").forEach((s) => s.remove());
+  $("#stage").insertAdjacentHTML("beforeend", SL.join(""));
+  $("#shT").textContent = i.nome;
+  $("#shSec").innerHTML = $$("#stage .sl").map((s, k) => s.dataset.sec ? `<button class="btn o s" data-go="${k}">${esc(s.dataset.sec)}</button>` : "").join(" ");
+  $$("#shSec [data-go]").forEach((b) => b.addEventListener("click", () => ir(+b.dataset.go)));
+  $("#show").classList.remove("hid"); document.body.style.overflow = "hidden";
+  ir(0);
+}
+function fechar() { $("#show").classList.add("hid"); document.body.style.overflow = ""; if (document.fullscreenElement) document.exitFullscreen?.(); }
+function ir(n) {
+  const S = $$("#stage .sl"); if (!S.length) return;
+  cur = Math.max(0, Math.min(S.length - 1, n));
+  S.forEach((s, k) => s.classList.toggle("on", k === cur));
+  $("#shN").textContent = `${cur + 1} / ${S.length}`;
+  $("#shP").style.visibility = cur ? "" : "hidden"; $("#shNx").style.visibility = cur < S.length - 1 ? "" : "hidden";
+}
+const bg = (u) => `style="background-image:url('${esc(u)}')"`;
+const lista = (a) => `<ul>${a.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+function slideContato(aviso) {
+  const p = lerPerfil();
+  return `<section class="sl" data-sec="Contato"><div class="k">Fale comigo</div><h1>${esc(p.nome || "")}</h1>
+    <p class="big">${p.wpp ? "WhatsApp " + esc(p.wpp) : ""}</p>${p.creci ? `<p>CRECI ${esc(p.creci)}</p>` : ""}
+    <p class="aviso">${esc(aviso || "")} Valores e condições podem mudar sem aviso prévio. Imagens ilustrativas.</p></section>`;
+}
+function slidesEmp(i) {
+  const e = i.e, x = i.x, S = [], fotos = x.fotos || [];
+  let meses = "";
+  if (e.entrega && /^\d{4}-\d{2}/.test(e.entrega)) {
+    const d = new Date(), [ay, am] = e.entrega.split("-").map(Number);
+    const n = (ay - d.getFullYear()) * 12 + (am - (d.getMonth() + 1));
+    meses = n > 0 ? `Entrega ${mesAno(e.entrega)} · faltam ${n} meses` : `Entrega ${mesAno(e.entrega)}`;
+  } else if (e.pronto) meses = "Pronto para morar";
+  S.push(`<section class="sl capa" data-sec="Início" ${bg(fotos[0] || "")}><div class="cx"><div class="k">${esc(e.incorp)} · ${esc(e.status)}</div><h1>${esc(e.nome)}</h1>
+    <p>${esc(e.endereco || e.bairro + ", " + e.cidade)}</p><p class="big">${esc(i.preco)}${meses ? ` <span style="font-size:.55em;color:#fff">· ${esc(meses)}</span>` : ""}</p></div></section>`);
+  if (x.resumo || (x.ficha || []).length)
+    S.push(`<section class="sl" data-sec="Ficha"><div class="k">O empreendimento</div><h2>${esc(e.nome)}</h2>${x.resumo ? `<p>${esc(x.resumo)}</p>` : ""}
+      ${(x.ficha || []).length ? `<table>${x.ficha.map(([a, b]) => `<tr><td><b>${esc(a)}</b></td><td>${esc(b)}</td></tr>`).join("")}</table>` : ""}</section>`);
+  fotos.slice(1).forEach((f, k) => S.push(`<section class="sl foto" ${k ? "" : 'data-sec="Fotos"'} ${bg(f)}></section>`));
+  if ((x.lazer || []).length) S.push(`<section class="sl" data-sec="Lazer"><div class="k">Lazer</div><h2>Lazer completo</h2>${lista(x.lazer)}</section>`);
+  if ((x.dif || []).length) S.push(`<section class="sl"><div class="k">Diferenciais</div><h2>Diferenciais</h2>${lista(x.dif)}</section>`);
+  if (e._units.length) {
+    const g = {}; e._units.forEach((u) => { (g[u.quartos] ||= []).push(u); });
+    const linhas = Object.keys(g).sort().map((k) => { const v = g[k].map((u) => u.valor), a = g[k].map((u) => u.area).filter(Boolean);
+      return `<tr><td>${esc(k)}</td><td>${a.length ? Math.min(...a).toLocaleString("pt-BR") + (Math.max(...a) > Math.min(...a) ? " a " + Math.max(...a).toLocaleString("pt-BR") : "") + " m²" : ""}</td><td class="v">${g[k].length} disp.</td><td class="v">a partir de ${brl(Math.min(...v))}</td></tr>`; }).join("");
+    S.push(`<section class="sl" data-sec="Valores"><div class="k">Unidades e valores</div><h2>Opções disponíveis</h2><table>${linhas}</table><p class="aviso">${esc(e.tabela)} · Valores podem mudar sem aviso prévio.</p></section>`);
+    const u = e._units.slice().sort((a, b) => a.valor - b.valor)[0];
+    (u.fluxos || []).forEach((f, k) => {
+      S.push(`<section class="sl" ${k ? "" : 'data-sec="Pagamento"'}><div class="k">Exemplo de pagamento · unidade ${esc(u.un)} (${brl(u.valor)})</div><h2>${esc(f.nome)}</h2>
+        <table>${f.linhas.map(([r, q, v]) => `<tr><td>${esc(r)}</td><td class="v">${q > 1 ? q + "x de " + brl(v) : brl(v)}</td></tr>`).join("")}</table>
+        <p class="aviso">Simulação na menor unidade disponível. Valores podem mudar sem aviso prévio.</p></section>`);
+    });
+  } else if ((x.condicoes || []).length) S.push(`<section class="sl" data-sec="Pagamento"><div class="k">Condições</div><h2>Condições de pagamento</h2>${lista(x.condicoes)}</section>`);
+  S.push(slideContato(""));
+  return S;
+}
+function slidesVenda(i) {
+  const v = i.v, S = [];
+  S.push(`<section class="sl capa" data-sec="Início" ${bg(v.fotos[0] || "")}><div class="cx"><div class="k">${esc(v.tipo)}</div><h1>${esc(v.nome)}</h1>
+    <p>${esc(v.local)}</p><p class="big">${esc(i.preco)}</p></div></section>`);
+  if (v.info.length) S.push(`<section class="sl" data-sec="Ficha"><div class="k">O imóvel</div><h2>${esc(v.nome)}</h2><table>${v.info.map(([a, b]) => `<tr><td><b>${esc(a)}</b></td><td>${esc(b)}</td></tr>`).join("")}</table>
+    ${v.comodidades.length ? `<p style="margin-top:14px">${v.comodidades.map(esc).join(" · ")}</p>` : ""}</section>`);
+  v.fotos.slice(1).forEach((f, k) => S.push(`<section class="sl foto" ${k ? "" : 'data-sec="Fotos"'} ${bg(f)}></section>`));
+  if (v.descricao) S.push(`<section class="sl" data-sec="Descrição"><div class="k">Descrição</div><h2>${esc(v.nome)}</h2><p style="white-space:pre-line;font-size:clamp(15px,1.5vw,18px)">${esc(v.descricao)}</p></section>`);
+  S.push(slideContato(""));
+  return S;
 }
