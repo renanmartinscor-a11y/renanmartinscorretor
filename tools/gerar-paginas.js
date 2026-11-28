@@ -474,6 +474,13 @@ const PESSOA = {
 
 // ---------- 6f. Área do Corretor: versão no app.js para não ficar preso no cache ----------
 {
+  const md5 = (f) => require("crypto").createHash("md5").update(fs.readFileSync(f)).digest("hex").slice(0, 8);
+  const va = md5(path.join(ROOT, "js", "apres.js"));
+  for (const f of [path.join(ROOT, "corretores", "app.js"), path.join(ROOT, "apresentacao", "index.html")]) {
+    if (!fs.existsSync(f)) continue;
+    const t0 = fs.readFileSync(f, "utf8"), t1 = t0.replace(/"\/js\/apres\.js(\?v=[0-9a-z]+)?"/g, '"/js/apres.js?v=' + va + '"');
+    if (t1 !== t0) fs.writeFileSync(f, t1);
+  }
   const pc = path.join(ROOT, "corretores", "index.html");
   if (fs.existsSync(pc)) {
     const v = require("crypto").createHash("md5").update(fs.readFileSync(path.join(ROOT, "corretores", "app.js"))).digest("hex").slice(0, 8);

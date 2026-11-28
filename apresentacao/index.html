@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Apresentação do imóvel · Renan Martins Corretor</title>
+<meta name="robots" content="noindex,nofollow">
+<meta property="og:title" content="Apresentação do imóvel">
+<meta property="og:description" content="Fotos, ficha e valores do imóvel. Valores podem mudar sem aviso prévio.">
+<meta property="og:image" content="https://renanmartinscorretor.com.br/logo/rm-quadrado-1200.png">
+<link rel="icon" href="/favicon.png?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#13233F;color:#fff;font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center}
+.box{padding:30px}.box img{height:60px}.box a{color:#E3C98F}
+</style>
+</head>
+<body>
+<div class="box" id="box"><img src="/logo/logo-rm.png" alt="Renan Martins"><p id="st">Carregando a apresentação…</p></div>
+<script type="module">
+import * as AP from "/js/apres.js?v=c04e420d";
+const q = new URLSearchParams(location.search);
+const perfil = { nome: q.get("n") || "", creci: q.get("c") || "", wpp: q.get("w") || "" };
+try {
+  const { itens } = await AP.carregar();
+  const i = itens.find((x) => x.id === q.get("i"));
+  if (!i) throw new Error("não encontrado");
+  const u = q.get("u") && i.e ? i.e._units.find((z) => z.id === q.get("u")) : null;
+  document.title = (u ? `${i.nome} · unidade ${u.un}` : i.nome) + " · Apresentação";
+  if (q.get("u") && !u) document.getElementById("st").textContent = "Esta unidade não está mais disponível. Veja a apresentação do empreendimento.";
+  AP.abrir(i, u ? u.id : null, perfil, { semFechar: true });
+} catch (e) {
+  document.getElementById("st").innerHTML = 'Este imóvel não está mais disponível. <a href="/">Veja os imóveis no site</a>.';
+}
+</script>
+</body>
+</html>

@@ -54,6 +54,11 @@ td.v,th.v{text-align:right;white-space:nowrap}
 .acard .im{aspect-ratio:16/10;background:#DCD5C4 center/cover}
 .acard .tx{padding:10px 12px}.acard b{font-family:Marcellus,serif;font-weight:400;font-size:17px;color:var(--n);display:block}
 .acard small{color:var(--m)}
+#esc{position:fixed;inset:0;background:rgba(10,20,40,.6);z-index:70;display:flex;align-items:center;justify-content:center;padding:14px}
+.escbx{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:92vh;display:flex;flex-direction:column;padding:20px}
+.escg{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.escl{overflow:auto;flex:1;margin-top:4px;border-top:1px solid var(--l)}
+.urow{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--l);flex-wrap:wrap}.urow .sp{flex:1}.urow .uv{color:var(--n);margin-right:4px}
 #show{position:fixed;inset:0;background:var(--n);color:#fff;z-index:50;display:flex;flex-direction:column}
 #show .top{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:14px}
 #show .top .sp{flex:1}.shsec{display:flex;gap:6px;overflow-x:auto;margin-left:10px}.shsec .btn{white-space:nowrap;border-color:rgba(255,255,255,.35)}#show .top{flex-wrap:nowrap}
@@ -201,12 +206,17 @@ td.v,th.v{text-align:right;white-space:nowrap}
     </div>
   </section>
 </main>
-<div id="show" class="hid">
-  <div class="top"><b id="shT"></b><span id="shSec" class="shsec"></span><span class="sp"></span><span id="shN"></span>
-    <button class="btn o s" id="shFs">Tela cheia</button><button class="btn s" id="shX">Fechar ✕</button></div>
-  <div class="stage" id="stage"><button class="nv p" id="shP">‹</button><button class="nv n" id="shNx">›</button></div>
+<div id="esc" class="hid">
+  <div class="escbx">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div><h2 id="escT" style="margin:0"></h2><p class="note" id="escS" style="margin:4px 0 0"></p></div><span class="sp" style="flex:1"></span><button class="btn o s" id="escX">Fechar ✕</button></div>
+    <div class="escg"><button class="btn" id="escGeral">▶ Apresentação geral</button><button class="btn o" id="escGeralSh">Compartilhar geral</button></div>
+    <h3 style="margin:16px 0 6px">Ou escolha a unidade</h3>
+    <input id="escQ" placeholder="Filtrar por número, quartos, posição…">
+    <div id="escMsg" class="note" style="min-height:1.2em;margin-top:6px;color:#1F5B2A"></div>
+    <div id="escL" class="escl"></div>
+  </div>
 </div>
 <script src="https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=pt-BR" async defer></script>
-<script type="module" src="/corretores/app.js?v=498b8e2c"></script>
+<script type="module" src="/corretores/app.js?v=9a51e392"></script>
 </body>
 </html>
