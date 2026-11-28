@@ -240,7 +240,7 @@ function montar(opts) {
     if (atual.validar && !atual.validar()) return;
     const url = linkCompartilhar(atual.i, atual.unitId, atual.perfilLink);
     const r = await compartilhar(url, atual.titulo);
-    if (r === "copiado") aviso("Link copiado! É só colar no WhatsApp do cliente.");
+    if (r === "copiado") aviso(`Link copiado com os dados de ${(atual.perfilLink && atual.perfilLink.nome) || "quem compartilhou"}! É só colar no WhatsApp do cliente.`);
   };
   document.addEventListener("keydown", (ev) => {
     if (EL.hidden) return;

@@ -2,7 +2,7 @@ import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js
 import { wixRequest, WixApiError, setTokens } from "/js/wix/client.js";
 import { memberTokensForSession } from "/js/wix/auth.js";
 import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
-import * as AP from "/js/apres.js?v=4d7e4695";
+import * as AP from "/js/apres.js?v=2d7dac01";
 
 const DONO = "renanmartinscor@gmail.com";
 const $ = (s, el = document) => el.querySelector(s);
@@ -237,8 +237,11 @@ async function carregarPerfil(member) {
   const p = lerPerfil();
   $("#dNome").value = p.nome; $("#dCel").value = p.wpp; $("#dCreci").value = p.creci;
   try {
-    const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PerfilCorretor", query: { paging: { limit: 5 } } } });
-    const it = (r.dataItems || []).find((i) => emailDo(member) && (i.data.email || "").toLowerCase() === emailDo(member));
+    const em = emailDo(member);
+    const acha = (r) => (r.dataItems || []).find((i) => em && (i.data.email || "").toLowerCase() === em);
+    let it = null;
+    try { it = acha(await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PerfilCorretor", query: { filter: { email: { $eq: em } }, paging: { limit: 20 } } } })); } catch (e) {}
+    if (!it) it = acha(await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PerfilCorretor", query: { paging: { limit: 200 } } } }));
     if (it) {
       PERFIL_ID = it.id;
       const d = it.data;
@@ -401,7 +404,7 @@ async function partilhar(i, unitId, btn) {
   const p = lerPerfil();
   const u = unitId ? i.e._units.find((z) => z.id === unitId) : null;
   const r = await AP.compartilhar(AP.linkCompartilhar(i, unitId, p), u ? `${i.nome} · unidade ${u.un}` : i.nome);
-  if (r === "copiado") toast("Link copiado! É só colar no WhatsApp do cliente.");
+  if (r === "copiado") toast(`Link copiado com os dados de ${p.nome}! É só colar no WhatsApp do cliente.`);
 }
 function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
 
