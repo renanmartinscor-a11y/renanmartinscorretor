@@ -85,7 +85,7 @@ td.v,th.v{text-align:right;white-space:nowrap}
   <!-- Login / cadastro -->
   <section id="vAuth" class="auth hid">
     <div class="card">
-      <div class="tabs"><button data-a="in" class="on">Entrar</button><button data-a="up">Solicitar acesso</button></div>
+      <div class="tabs"><button data-a="in" class="on">Entrar</button><button data-a="up">Criar cadastro</button></div>
       <form id="fIn">
         <label>E-mail</label><input type="email" id="inEmail" required autocomplete="username">
         <label>Senha</label><input type="password" id="inSenha" required autocomplete="current-password">
@@ -95,8 +95,8 @@ td.v,th.v{text-align:right;white-space:nowrap}
         <div class="row"><div><label>Nome</label><input id="upNome" required></div><div><label>Sobrenome</label><input id="upSob" required></div></div>
         <label>E-mail</label><input type="email" id="upEmail" required autocomplete="username">
         <label>Crie uma senha</label><input type="password" id="upSenha" minlength="6" required autocomplete="new-password">
-        <p><button class="btn" style="width:100%">Enviar pedido de acesso</button></p>
-        <p class="note">O acesso só é liberado depois que o Renan aprovar o seu cadastro.</p>
+        <p><button class="btn" style="width:100%">Criar cadastro e entrar</button></p>
+        <p class="note">Ferramenta exclusiva para corretores. É preciso ter cadastro para acessar.</p>
       </form>
       <form id="fCod" class="hid">
         <p>Enviamos um código para o seu e-mail. Digite abaixo:</p>
@@ -115,7 +115,7 @@ td.v,th.v{text-align:right;white-space:nowrap}
       <button data-t="tabelas">Tabelas</button>
       <button data-t="proposta">Proposta / simulação</button>
       <button data-t="materiais">Materiais</button>
-      <button data-t="leads" class="hid" id="tabLeads">Leads e acessos</button>
+      <button data-t="leads" class="hid" id="tabLeads">Leads e cadastros</button>
     </div>
 
     <div class="card" data-p="apres">
@@ -170,13 +170,12 @@ td.v,th.v{text-align:right;white-space:nowrap}
     </div>
 
     <div class="card hid" data-p="leads">
-      <h2>Leads e acessos</h2>
+      <h2>Leads e cadastros</h2>
       <p>Só você vê esta aba.</p>
       <p><a class="btn" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/LeadsSite">Ver leads do site</a></p>
-      <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Aprovar corretores (membros pendentes)</a></p>
+      <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Ver quem tem cadastro</a></p>
       <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/CorretoresMateriais">Editar materiais</a></p>
-      <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/signup-login-settings">Quem pode se cadastrar (só quem eu aprovar)</a></p>
-      <p class="note">Leads e aprovações ficam no painel do Wix (pede o seu login).</p>
+      <p class="note">Leads e cadastros ficam no painel do Wix (pede o seu login).</p>
     </div>
   </section>
 </main>

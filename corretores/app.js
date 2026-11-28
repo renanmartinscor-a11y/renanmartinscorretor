@@ -18,11 +18,11 @@ function tratar(r) {
   const st = estado(r);
   if (st === "SUCCESS") { msg(""); return; }
   if (st === "EMAIL_VERIFICATION_REQUIRED") { mostrarForm("fCod"); msg("Confirme o seu e-mail com o código enviado.", "i"); return; }
-  if (st === "OWNER_APPROVAL_REQUIRED") { msg("Pedido recebido! Seu acesso será liberado assim que o Renan aprovar. Você recebe a confirmação por e-mail.", "ok"); return; }
+  if (st === "OWNER_APPROVAL_REQUIRED") { msg("Cadastro recebido! Aguarde a liberação do acesso.", "ok"); return; }
   const code = r && (r.errorCode || r.error || "");
   if (/exists/i.test(code)) msg("Este e-mail já tem cadastro. Use a aba Entrar.", "e");
   else if (/password|invalid|notFound|wrong/i.test(code)) msg("E-mail ou senha incorretos.", "e");
-  else msg("Não foi possível entrar agora. Se você acabou de pedir acesso, aguarde a aprovação do Renan.", "e");
+  else msg("Não foi possível entrar agora. Confira o e-mail e a senha e tente de novo.", "e");
 }
 function mostrarForm(id) { ["fIn", "fUp", "fCod"].forEach((f) => $("#" + f).classList.toggle("hid", f !== id)); }
 $$("[data-a]").forEach((b) => b.addEventListener("click", () => {

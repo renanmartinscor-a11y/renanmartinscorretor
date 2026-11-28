@@ -488,6 +488,7 @@ for (const f of ["index.html", "guia-itapoa.html"]) {
   let h = fs.readFileSync(p, "utf8");
   h = h.split('href="/logo/icon-512.png"').join('href="/logo/icon-512.png?v=2"').split('href="favicon.png"').join('href="/favicon.png?v=2"');
   if (f === "index.html" && !h.includes('href="/corretores/"')) h = h.replace(/<\/footer>(?![\s\S]*<\/footer>)/, '<p style="text-align:center;font-size:12px;opacity:.7;margin:8px 0 0"><a href="/corretores/" rel="nofollow" style="color:inherit">Área do Corretor</a></p></footer>');
+  if (f === "index.html" && !h.includes('class="menu-corretor"')) h = h.replace(/(<nav class="menu" id="menu">[\s\S]*?)(\s*<\/nav>)/, '$1\n      <a href="/corretores/" class="menu-corretor" rel="nofollow">Área do Corretor</a>$2');
   if (f === "index.html" && !h.includes("/js/busca-nome.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/busca-nome.js" defer></script>\n</body>');
   if (!h.includes("/js/lead.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/lead.js" defer></script>\n</body>');
   fs.writeFileSync(p, h);
