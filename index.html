@@ -1642,7 +1642,7 @@ renderHome();renderEmps();fillSimUnits();renderSim();renderFin();renderCmpBar();
 <script>
 try{(function(){var el=document.getElementById('homeVendaCards');if(!el||typeof CLV_LIST==='undefined')return;var L=CLV_LIST.filter(function(o){return o.cidade==='Itapoá'&&o.img;});var pick=[],seen={};['casa','apartamento','terreno'].forEach(function(t){L.filter(function(o){return o.tipo===t;}).slice(0,3).forEach(function(o){if(!seen[o.slug]){seen[o.slug]=1;pick.push(o);}});});L.forEach(function(o){if(pick.length<6&&!seen[o.slug]){seen[o.slug]=1;pick.push(o);}});pick=pick.slice(0,6);if(!pick.length){document.getElementById('homeVenda').style.display='none';return;}el.innerHTML=pick.map(clvCard).join('');})();}catch(e){var h=document.getElementById('homeVenda');if(h)h.style.display='none';}
 </script>
-<script src="/js/lead.js" defer></script>
 <script src="/js/busca-nome.js" defer></script>
+<script src="/js/lead.js" defer></script>
 </body>
 </html>
