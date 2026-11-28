@@ -231,6 +231,8 @@ const VENDA = [];
 {
   let cat = null;
   try { cat = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "cleverson.json"), "utf8")); } catch (e) {}
+  // Valor claramente inválido para venda (ex.: R$ 1.200) vira "valor a consultar"
+  if (cat && cat.imoveis) for (const it of cat.imoveis) if (!(Number(it.preco) >= 10000)) it.preco = 0;
   const dirVenda = path.join(dirImoveis, "venda");
   if (cat && cat.imoveis && cat.imoveis.length) {
     fs.mkdirSync(dirVenda, { recursive: true });
@@ -297,7 +299,7 @@ const VENDA = [];
           (fotos.length > 5 ? `<span class="gmore">+${fotos.length - 5} fotos</span>` : "") + `</div>`;
       }
       b += `<p class="cap">${esc(tipoTxt)}${g.est && !/pronto/i.test(g.est) ? " · " + esc(g.est) : g.est ? " · Pronto" : ""}</p><h1>${esc(g.nome)}</h1><p class="lead">${esc(g.local)}</p>`;
-      b += `<dl class="kv">${it.preco ? `<div><dt>Valor</dt><dd>${brl(it.preco)}</dd></div>` : `<div><dt>Valor</dt><dd>Sob consulta</dd></div>`}` +
+      b += `<dl class="kv">${it.preco ? `<div><dt>Valor</dt><dd>${brl(it.preco)}</dd></div>` : `<div><dt>Valor</dt><dd>A consultar</dd></div>`}` +
         (g.q ? `<div><dt>Quartos</dt><dd>${g.q}${g.s ? ` (${g.s} suíte${g.s > 1 ? "s" : ""})` : ""}</dd></div>` : "") +
         (g.v ? `<div><dt>Vagas</dt><dd>${g.v}</dd></div>` : "") + (g.area ? `<div><dt>Área</dt><dd>${esc(g.area)}</dd></div>` : "") + `</dl>`;
       b += `<a class="btn" href="${wa(msg)}">Tenho interesse · WhatsApp</a>`;
@@ -349,7 +351,7 @@ const VENDA = [];
   if (VENDA.length) {
     b += `<h2 id="venda">Casas, terrenos e apartamentos à venda</h2><p>Imóveis prontos e oportunidades em Itapoá e região, com fotos e ficha completa.</p><div class="cards">`;
     for (const g of VENDA) {
-      b += `<a class="card" href="/imoveis/venda/${g.it.id}/">${g.it.capa ? `<div class="ph" style="background-image:url('${g.it.capa}')"></div>` : ""}<div class="tx"><span class="cap">${esc(g.tipo === "terreno" ? "Terreno" : g.tipo === "casa" ? "Casa" : g.fase ? "Apartamento na planta" : "Apartamento")}</span><h3>${esc(g.nome)}</h3><p>${esc(g.local)}${[g.q ? g.q + " quarto" + (g.q > 1 ? "s" : "") : "", g.area].filter(Boolean).length ? "<br>" + esc([g.q ? g.q + " quarto" + (g.q > 1 ? "s" : "") : "", g.area].filter(Boolean).join(" · ")) : ""}${g.it.preco ? `<br><b>${brl(g.it.preco)}</b>` : ""}</p></div></a>`;
+      b += `<a class="card" href="/imoveis/venda/${g.it.id}/">${g.it.capa ? `<div class="ph" style="background-image:url('${g.it.capa}')"></div>` : ""}<div class="tx"><span class="cap">${esc(g.tipo === "terreno" ? "Terreno" : g.tipo === "casa" ? "Casa" : g.fase ? "Apartamento na planta" : "Apartamento")}</span><h3>${esc(g.nome)}</h3><p>${esc(g.local)}${[g.q ? g.q + " quarto" + (g.q > 1 ? "s" : "") : "", g.area].filter(Boolean).length ? "<br>" + esc([g.q ? g.q + " quarto" + (g.q > 1 ? "s" : "") : "", g.area].filter(Boolean).join(" · ")) : ""}${g.it.preco ? `<br><b>${brl(g.it.preco)}</b>` : "<br><b>Valor a consultar</b>"}</p></div></a>`;
     }
     b += `</div>`;
   }
@@ -402,6 +404,8 @@ if (VENDA.length) {
     s2 = s2.slice(0, i) + "const CLV=" + JSON.stringify(rows) + ";" + s2.slice(j + 3);
     s2 = s2.replace("const CLV_URL='https://cleversonimoveis.com.br/';", "const CLV_URL='/imoveis/venda/';");
     s2 = s2.split('href="${CLV_URL+o.slug}" target="_blank" rel="noopener"').join('href="${CLV_URL+o.slug}"');
+    s2 = s2.split("'+brl0(o.valor)+'").join("'+(o.valor?brl0(o.valor):'valor a consultar')+'");
+    s2 = s2.split("<b>${brl0(o.valor)}</b>").join("<b>${o.valor?brl0(o.valor):'A consultar'}</b>");
     s2 = s2.replace("Ver fotos ↗</span>", "Ver fotos</span>").replace("Fotos e detalhes ↗</a>", "Fotos e detalhes</a>");
     fs.writeFileSync(path.join(ROOT, "index.html"), s2);
   }

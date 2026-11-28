@@ -234,7 +234,7 @@ async function iniciarApres() {
   ITENS = DADOS.emps.map((e) => ({ k: "e", id: e.id, nome: e.nome, sub: `${e.incorp} · ${e.bairro}, ${e.cidade}`, capa: extra[e.id]?.fotos?.[0] || "",
       preco: e._units.length ? "a partir de " + brl(e._min) : "valores sob consulta", e, x: extra[e.id] || {} }))
     .concat(AP.venda.map((v) => ({ k: "v", id: v.id, nome: v.nome, sub: [v.tipo, v.local].filter(Boolean).join(" · "), capa: v.fotos[0] || "",
-      preco: v.valor >= 10000 ? brl(v.valor) : "valor sob consulta", v })));
+      preco: v.valor >= 10000 ? brl(v.valor) : "valor a consultar", v })));
   $("#aq").addEventListener("input", listarApres);
   $("#aq").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const f = $("#ares .acard"); if (f) f.click(); } });
   listarApres();
