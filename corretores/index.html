@@ -49,7 +49,9 @@ td.v,th.v{text-align:right;white-space:nowrap}
 .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#F3EEDF;color:#6A5420;margin-right:4px}
 .mat{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--l)}
 .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:14px}
-.acard{border:1px solid var(--l);border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;text-align:left;padding:0;font:inherit;color:inherit}
+.acard .acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.acard .acts .btn{padding:7px 10px}.acard .acts .uni{background:var(--n);color:#fff}.acard .im{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--n);color:#fff;padding:12px 18px;border-radius:999px;font-weight:600;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.acard{border:1px solid var(--l);border-radius:12px;overflow:hidden;background:#fff;text-align:left;padding:0;font:inherit;color:inherit}
 .acard:hover{border-color:var(--g)}
 .acard .im{aspect-ratio:16/10;background:#DCD5C4 center/cover}
 .acard .tx{padding:10px 12px}.acard b{font-family:Marcellus,serif;font-weight:400;font-size:17px;color:var(--n);display:block}
@@ -188,7 +190,7 @@ td.v,th.v{text-align:right;white-space:nowrap}
       </div>
       <div class="seus" id="pSeus"></div>
       <div id="pPrev" style="margin-top:16px"></div>
-      <p><button class="btn" id="pGerar">Gerar PDF da proposta</button></p>
+      <p><button class="btn" id="pGerar">Gerar PDF da proposta</button> <button class="btn o" id="pApres">▶ Apresentar esta unidade</button> <button class="btn o" id="pShare">🔗 Compartilhar esta unidade</button></p>
       <p class="note">Abre a proposta pronta; escolha "Salvar como PDF" na janela de impressão.</p>
     </div>
 
@@ -243,13 +245,13 @@ td.v,th.v{text-align:right;white-space:nowrap}
   <div class="escbx">
     <div style="display:flex;align-items:flex-start;gap:10px"><div><h2 id="escT" style="margin:0"></h2><p class="note" id="escS" style="margin:4px 0 0"></p></div><span class="sp" style="flex:1"></span><button class="btn o s" id="escX">Fechar ✕</button></div>
     <div class="escg"><button class="btn" id="escGeral">▶ Apresentação geral</button><button class="btn o" id="escGeralSh">Compartilhar geral</button></div>
-    <h3 style="margin:16px 0 6px">Ou escolha a unidade</h3>
+    <h3 style="margin:16px 0 6px">🏠 Escolha a unidade para apresentar ou compartilhar</h3>
     <input id="escQ" placeholder="Filtrar por número, quartos, posição…">
     <div id="escMsg" class="note" style="min-height:1.2em;margin-top:6px;color:#1F5B2A"></div>
     <div id="escL" class="escl"></div>
   </div>
 </div>
 <script src="https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=pt-BR" async defer></script>
-<script type="module" src="/corretores/app.js?v=77ae52d4"></script>
+<script type="module" src="/corretores/app.js?v=7ad5bac7"></script>
 </body>
 </html>

@@ -144,6 +144,8 @@ async function iniciar() {
   $("#pFx").addEventListener("change", previa);
   ["pCli", "pObs"].forEach((id) => $("#" + id).addEventListener("input", previa));
   $("#pGerar").addEventListener("click", gerarPdf);
+  $("#pApres").addEventListener("click", () => { const i = ITENS.find((x) => x.id === $("#pEmp").value); if (i) AP.abrir(i, $("#pUn").value, lerPerfil()); });
+  $("#pShare").addEventListener("click", () => { const i = ITENS.find((x) => x.id === $("#pEmp").value); if (i) partilhar(i, $("#pUn").value); });
   unidades();
   iniciarApres();
 }
@@ -186,8 +188,12 @@ function tabela() {
   const e = emp($("#tEmp").value); if (!e) return;
   const L = linhasTabela();
   $("#tHead").innerHTML = `<h2>${esc(e.nome)}</h2><p class="note">${esc(e.incorp)} · ${esc(e.endereco || e.bairro)}${e.entrega ? " · entrega " + mesAno(e.entrega) : ""}<br>${esc(e.tabela)}${e.correcao ? " · " + esc(e.correcao) : ""}</p>`;
-  $("#tTab").innerHTML = `<thead><tr><th>Unidade</th><th>Tipologia</th><th class="v">Área (m²)</th><th>Vaga</th><th>Posição</th><th class="v">Valor</th></tr></thead><tbody>` +
-    L.map((u) => `<tr><td>${esc(u.un)}</td><td>${esc(u.quartos)}</td><td class="v">${u.area ? Number(u.area).toLocaleString("pt-BR") : "—"}</td><td>${esc(u.vaga)}</td><td>${esc(u.pos)}${u.mar ? ' <span class="tag">face mar</span>' : ""}</td><td class="v">${brl(u.valor)}</td></tr>`).join("") + "</tbody>";
+  $("#tTab").innerHTML = `<thead><tr><th>Unidade</th><th>Tipologia</th><th class="v">Área (m²)</th><th>Vaga</th><th>Posição</th><th class="v">Valor</th><th class="noprint">Apresentação</th></tr></thead><tbody>` +
+    L.map((u) => `<tr><td>${esc(u.un)}</td><td>${esc(u.quartos)}</td><td class="v">${u.area ? Number(u.area).toLocaleString("pt-BR") : "—"}</td><td>${esc(u.vaga)}</td><td>${esc(u.pos)}${(u.mar || /leste/i.test(u.pos || "")) ? ' <span class="tag">face mar</span>' : ""}</td><td class="v">${brl(u.valor)}</td>
+      <td class="noprint" style="white-space:nowrap"><button class="btn s" data-tap="${u.id}">▶</button> <button class="btn o s" data-tsh="${u.id}">🔗 Compartilhar</button></td></tr>`).join("") + "</tbody>";
+  const it = () => ITENS.find((x) => x.id === e.id);
+  $$("[data-tap]").forEach((b) => b.addEventListener("click", () => it() && AP.abrir(it(), b.dataset.tap, lerPerfil())));
+  $$("[data-tsh]").forEach((b) => b.addEventListener("click", () => it() && partilhar(it(), b.dataset.tsh, b)));
 }
 function csv() {
   const e = emp($("#tEmp").value); const L = linhasTabela();
@@ -324,7 +330,7 @@ let ITENS = [], ESC = null;
 async function iniciarApres() {
   try { ITENS = (await AP.carregar()).itens; } catch { $("#ares").innerHTML = '<div class="msg e">Não foi possível carregar.</div>'; return; }
   $("#aq").addEventListener("input", listarApres);
-  $("#aq").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const f = $("#ares .acard"); if (f) f.click(); } });
+  $("#aq").addEventListener("keydown", (ev) => { if (ev.key === "Enter") { const f = $("#ares [data-ap]") || $("#ares button[data-geral]"); if (f) f.click(); } });
   $("#escX").addEventListener("click", () => $("#esc").classList.add("hid"));
   $("#esc").addEventListener("click", (ev) => { if (ev.target.id === "esc") $("#esc").classList.add("hid"); });
   $("#escQ").addEventListener("input", listarUnidadesEsc);
@@ -333,7 +339,9 @@ async function iniciarApres() {
   listarApres(); busca();
 }
 function cardHtml(i) {
-  return `<button class="acard" data-ap="${i.id}"><div class="im" style="background-image:url('${esc(i.capa)}')"></div><div class="tx"><b>${esc(i.nome)}</b><small>${esc(i.sub)}<br>${esc(i.preco)}${i.e && i.e._units.length ? ` · ${i.e._units.length} unidades` : ""}</small></div></button>`;
+  const temU = i.e && i.e._units.length;
+  return `<div class="acard"><div class="im" data-geral="${i.id}" style="background-image:url('${esc(i.capa)}')"></div><div class="tx"><b>${esc(i.nome)}</b><small>${esc(i.sub)}<br>${esc(i.preco)}${temU ? ` · ${i.e._units.length} unidades` : ""}</small>
+    <div class="acts"><button class="btn s" data-geral="${i.id}">▶ ${temU ? "Geral" : "Apresentar"}</button>${temU ? `<button class="btn s uni" data-ap="${i.id}">🏠 Unidade específica</button>` : ""}<button class="btn o s" data-shg="${i.id}" title="Compartilhar">🔗</button></div></div></div>`;
 }
 function listarApres() {
   const q = norm($("#aq").value).split(/\s+/).filter(Boolean);
@@ -344,10 +352,13 @@ function listarApres() {
   const R = rec.map((id) => ITENS.find((i) => i.id === id)).filter(Boolean);
   $("#arec").innerHTML = !q.length && R.length ? `<p class="note" style="margin:12px 0 0">Abertos recentemente: ${R.map((i) => `<a href="#" data-ap="${i.id}">${esc(i.nome)}</a>`).join(" · ")}</p>` : "";
   $$("[data-ap]").forEach((b) => b.addEventListener("click", (ev) => { ev.preventDefault(); abrirApres(b.dataset.ap); }));
+  $$("[data-geral]").forEach((b) => b.addEventListener("click", () => { const i = ITENS.find((x) => x.id === b.dataset.geral); if (i) { lembrar(i.id); AP.abrir(i, null, lerPerfil()); } }));
+  $$("[data-shg]").forEach((b) => b.addEventListener("click", () => { const i = ITENS.find((x) => x.id === b.dataset.shg); if (i) partilhar(i, null); }));
 }
+function lembrar(id) { try { let r = JSON.parse(localStorage.getItem("rm_apres_rec") || "[]"); r = [id, ...r.filter((x) => x !== id)].slice(0, 6); localStorage.setItem("rm_apres_rec", JSON.stringify(r)); } catch {} }
 function abrirApres(id) {
   const i = ITENS.find((x) => x.id === id); if (!i) return;
-  try { let r = JSON.parse(localStorage.getItem("rm_apres_rec") || "[]"); r = [id, ...r.filter((x) => x !== id)].slice(0, 6); localStorage.setItem("rm_apres_rec", JSON.stringify(r)); } catch {}
+  lembrar(id);
   if (i.k === "e" && i.e._units.length) { escolher(i); return; }
   AP.abrir(i, null, lerPerfil());
 }
@@ -363,16 +374,17 @@ function listarUnidadesEsc() {
   const U = ESC.e._units.filter((u) => q.every((w) => norm([u.un, u.quartos, u.pos, u.vaga].join(" ")).includes(w)))
     .sort((a, b) => String(a.un).localeCompare(String(b.un), "pt-BR", { numeric: true }));
   $("#escL").innerHTML = U.map((u) => `<div class="urow"><div><b>${esc(u.un)}</b> <span class="note">${esc(u.quartos)}${u.area ? " · " + Number(u.area).toLocaleString("pt-BR") + " m²" : ""}${u.pos ? " · " + esc(u.pos) : ""}${(u.mar || /leste/i.test(u.pos || "")) ? ' · <span class="tag">face mar</span>' : ""}</span></div>
-    <span class="sp"></span><b class="uv">${brl(u.valor)}</b><button class="btn s" data-uap="${u.id}">Apresentar</button><button class="btn o s" data-ush="${u.id}" title="Compartilhar link">Compartilhar</button></div>`).join("") || '<p class="note">Nenhuma unidade com esse filtro.</p>';
+    <span class="sp"></span><b class="uv">${brl(u.valor)}</b><button class="btn s" data-uap="${u.id}">▶ Apresentar</button><button class="btn o s" data-ush="${u.id}" title="Compartilhar link">🔗 Compartilhar unidade</button></div>`).join("") || '<p class="note">Nenhuma unidade com esse filtro.</p>';
   $$("[data-uap]").forEach((b) => b.addEventListener("click", () => { $("#esc").classList.add("hid"); AP.abrir(ESC, b.dataset.uap, lerPerfil()); }));
   $$("[data-ush]").forEach((b) => b.addEventListener("click", () => partilhar(ESC, b.dataset.ush)));
 }
-async function partilhar(i, unitId) {
+async function partilhar(i, unitId, btn) {
   const p = lerPerfil();
   const u = unitId ? i.e._units.find((z) => z.id === unitId) : null;
   const r = await AP.compartilhar(AP.linkCompartilhar(i, unitId, p), u ? `${i.nome} · unidade ${u.un}` : i.nome);
-  if (r === "copiado") { $("#escMsg").textContent = "Link copiado! É só colar no WhatsApp do cliente."; setTimeout(() => ($("#escMsg").textContent = ""), 3000); }
+  if (r === "copiado") toast("Link copiado! É só colar no WhatsApp do cliente.");
 }
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2800); }
 
 /* ---------------- leads (só o dono) ---------------- */
 let LEADS = null;
