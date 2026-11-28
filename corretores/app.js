@@ -465,11 +465,11 @@ async function carregarPedidos() {
 }
 function mostrarPedidos() {
   $("#kPend").textContent = PED.filter((m) => !m.saindo).length;
-  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Ainda não há corretores cadastrados. Quem se cadastrar aparece aqui em até 1 hora.</div>'; return; }
+  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Ainda não há corretores cadastrados. Quem se cadastrar aparece aqui em até 30 minutos.</div>'; return; }
   const dt = (x) => (x ? new Date(x).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "");
   $("#pList").innerHTML = PED.map((m) => `<div class="ped"><div class="av">${esc((m.title || "?").trim().charAt(0).toUpperCase())}</div>
       <div><b>${esc(m.title)}</b><br><span class="note">${esc(m.email || "")}${m.celular ? " · " + esc(m.celular) : ""}${m.creci ? " · CRECI " + esc(m.creci) : ""}${m.desde ? " · desde " + esc(dt(m.desde)) : ""}${m.ultimoAcesso ? " · último acesso " + esc(dt(m.ultimoAcesso)) : ""}</span></div><span class="sp"></span>
-      ${m.saindo ? '<span class="tag">removido · perde o acesso em até 1 hora</span>' : `<button class="btn no s" data-rem="${esc(m.memberId)}" data-nome="${esc(m.title)}">✕ Remover</button>`}</div>`).join("");
+      ${m.saindo ? '<span class="tag">removido · perde o acesso em até 30 minutos</span>' : `<button class="btn no s" data-rem="${esc(m.memberId)}" data-nome="${esc(m.title)}">✕ Remover</button>`}</div>`).join("");
   $$("[data-rem]").forEach((b) => b.addEventListener("click", () => { if (confirm(`Remover ${b.dataset.nome} da Área do Corretor? Essa pessoa perde o acesso.`)) remover(b.dataset.rem, b); }));
 }
 async function remover(id, btn) {
