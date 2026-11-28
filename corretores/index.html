@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Área do Corretor · Renan Martins</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--n:#13233F;--n2:#1C3157;--g:#C29A4E;--g2:#E3C98F;--bg:#F6F3EC;--t:#1E2530;--m:#6B7280;--l:#E6E0D2}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:15px}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0 0 .5em}
+a{color:var(--n2)}
+header{background:var(--n);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header img{height:42px}header .tt{font-family:Marcellus,serif;font-size:20px;color:var(--g2)}
+header .sp{flex:1}header .who{font-size:13px;opacity:.85}
+.btn{border:0;border-radius:8px;padding:10px 16px;font:600 14px Inter,sans-serif;cursor:pointer;background:var(--g);color:var(--n)}
+.btn.o{background:transparent;border:1px solid currentColor;color:inherit}
+.btn.s{padding:6px 10px;font-size:13px}
+main{max-width:1100px;margin:0 auto;padding:22px 16px 60px}
+.card{background:#fff;border:1px solid var(--l);border-radius:14px;padding:22px;margin-bottom:18px}
+.auth{max-width:420px;margin:40px auto}
+label{display:block;font-size:13px;color:var(--m);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #CFC7B5;border-radius:8px;font:inherit;background:#fff}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tabs button{border:1px solid var(--l);background:#fff;padding:9px 14px;border-radius:999px;cursor:pointer;font:500 14px Inter}
+.tabs button.on{background:var(--n);color:#fff;border-color:var(--n)}
+.msg{padding:10px 12px;border-radius:8px;margin-top:12px;font-size:14px}
+.msg.e{background:#FDECEC;color:#8A1C1C}.msg.ok{background:#EEF6EC;color:#1F5B2A}.msg.i{background:#F3EEDF;color:#5C4A1E}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px;border-bottom:1px solid var(--l);text-align:left}
+th{font-weight:600;color:var(--n);background:#FAF7F0;position:sticky;top:0}
+td.v,th.v{text-align:right;white-space:nowrap}
+.tw{overflow:auto;max-height:70vh}
+.note{font-size:13px;color:var(--m)}
+.hid{display:none!important}
+.emp{border:1px solid var(--l);border-radius:12px;padding:14px;margin:8px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.emp b{font-family:Marcellus,serif;font-size:18px;font-weight:400;color:var(--n)}
+.emp .sp{flex:1}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:#F3EEDF;color:#6A5420;margin-right:4px}
+.mat{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--l)}
+@media print{header,.tabs,.noprint{display:none!important}body{background:#fff}.card{border:0;padding:0}.tw{max-height:none}}
+</style>
+</head>
+<body>
+<header>
+  <a href="/"><img src="/logo/logo-rm.png" alt="Renan Martins"></a>
+  <span class="tt">Área do Corretor</span>
+  <span class="sp"></span>
+  <span class="who" id="who"></span>
+  <button class="btn o s hid" id="sair">Sair</button>
+</header>
+<main>
+  <div id="carregando" class="note">Carregando…</div>
+
+  <!-- Login / cadastro -->
+  <section id="vAuth" class="auth hid">
+    <div class="card">
+      <div class="tabs"><button data-a="in" class="on">Entrar</button><button data-a="up">Solicitar acesso</button></div>
+      <form id="fIn">
+        <label>E-mail</label><input type="email" id="inEmail" required autocomplete="username">
+        <label>Senha</label><input type="password" id="inSenha" required autocomplete="current-password">
+        <p><button class="btn" style="width:100%">Entrar</button></p>
+      </form>
+      <form id="fUp" class="hid">
+        <div class="row"><div><label>Nome</label><input id="upNome" required></div><div><label>Sobrenome</label><input id="upSob" required></div></div>
+        <label>E-mail</label><input type="email" id="upEmail" required autocomplete="username">
+        <label>Crie uma senha</label><input type="password" id="upSenha" minlength="6" required autocomplete="new-password">
+        <p><button class="btn" style="width:100%">Enviar pedido de acesso</button></p>
+        <p class="note">O acesso só é liberado depois que o Renan aprovar o seu cadastro.</p>
+      </form>
+      <form id="fCod" class="hid">
+        <p>Enviamos um código para o seu e-mail. Digite abaixo:</p>
+        <label>Código</label><input id="cod" required>
+        <p><button class="btn" style="width:100%">Confirmar</button></p>
+      </form>
+      <div id="authMsg"></div>
+    </div>
+  </section>
+
+  <!-- Área logada -->
+  <section id="vApp" class="hid">
+    <div class="tabs" id="tabs">
+      <button data-t="busca" class="on">Buscar empreendimento</button>
+      <button data-t="tabelas">Tabelas</button>
+      <button data-t="proposta">Proposta / simulação</button>
+      <button data-t="materiais">Materiais</button>
+      <button data-t="leads" class="hid" id="tabLeads">Leads e acessos</button>
+    </div>
+
+    <div class="card" data-p="busca">
+      <h2>Buscar empreendimento</h2>
+      <input id="bq" placeholder="Digite o nome (ex.: Babitonga, Bossa, Maui)…" autocomplete="off">
+      <div id="bres"></div>
+    </div>
+
+    <div class="card hid" data-p="tabelas">
+      <div class="row noprint">
+        <div><label>Empreendimento</label><select id="tEmp"></select></div>
+        <div><label>Dormitórios</label><select id="tQ"><option value="">Todos</option></select></div>
+      </div>
+      <p class="noprint"><button class="btn s" id="tPrint">Imprimir / salvar PDF</button> <button class="btn o s" id="tCsv">Baixar planilha (CSV)</button></p>
+      <div id="tHead"></div>
+      <div class="tw"><table id="tTab"></table></div>
+      <p class="note">Somente unidades disponíveis. Valores podem mudar sem aviso prévio — confirme com a construtora antes de fechar.</p>
+    </div>
+
+    <div class="card hid" data-p="proposta">
+      <h2>Proposta / simulação</h2>
+      <div class="row">
+        <div><label>Empreendimento</label><select id="pEmp"></select></div>
+        <div><label>Unidade</label><select id="pUn"></select></div>
+        <div><label>Forma de pagamento</label><select id="pFx"></select></div>
+      </div>
+      <div class="row">
+        <div><label>Nome do cliente</label><input id="pCli" placeholder="Opcional"></div>
+        <div><label>Observações</label><input id="pObs" placeholder="Opcional"></div>
+      </div>
+      <h3 style="margin-top:18px">Seus dados (aparecem na proposta)</h3>
+      <div class="row">
+        <div><label>Seu nome</label><input id="cNome"></div>
+        <div><label>CRECI</label><input id="cCreci"></div>
+        <div><label>WhatsApp</label><input id="cWpp"></div>
+      </div>
+      <div id="pPrev" style="margin-top:16px"></div>
+      <p><button class="btn" id="pGerar">Gerar PDF da proposta</button></p>
+      <p class="note">Abre a proposta pronta; escolha "Salvar como PDF" na janela de impressão.</p>
+    </div>
+
+    <div class="card hid" data-p="materiais">
+      <h2>Materiais para baixar</h2>
+      <div id="mList" class="note">Carregando…</div>
+    </div>
+
+    <div class="card hid" data-p="leads">
+      <h2>Leads e acessos</h2>
+      <p>Só você vê esta aba.</p>
+      <p><a class="btn" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/LeadsSite">Ver leads do site</a></p>
+      <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Aprovar corretores (membros pendentes)</a></p>
+      <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/CorretoresMateriais">Editar materiais</a></p>
+      <p class="note">Leads e aprovações ficam no painel do Wix (pede o seu login).</p>
+    </div>
+  </section>
+</main>
+<script type="module" src="/corretores/app.js"></script>
+</body>
+</html>

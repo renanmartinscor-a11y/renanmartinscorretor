@@ -57,6 +57,14 @@
     if (c.length < 2) { er.textContent = "Preencha sua cidade."; return; }
     var L = { nome: n, email: m, cidade: c, quando: new Date().toISOString() };
     setLead(L);
+    var origem = pend || "";
+    try {
+      var emailLead = m;
+      import("/js/wix/client.js").then(function (wx) {
+        var txt = ""; try { txt = new URL(origem).searchParams.get("text") || ""; } catch (x) {}
+        return wx.wixRequest("/wix-data/v2/items", { method: "POST", body: { dataCollectionId: "LeadsSite", dataItem: { data: { title: n, email: emailLead, cidade: c, pagina: location.pathname, mensagem: txt } } } });
+      }).catch(function () {});
+    } catch (x) {}
     var href = withData(pend || "https://wa.me/" + NUM, L);
     box.hidden = true; pend = null;
     if (window.fbq) try { fbq("track", "Lead"); } catch (x) {}

@@ -27,6 +27,10 @@ jobs:
               mv "/tmp/$f.new" "$f"
             fi
           done
+          mkdir -p js/wix
+          for m in auth-core auth client config media member-store members-core members-types members rich-content; do
+            curl -fsSL "$BASE/js/wix/$m.js" -o "/tmp/$m.js.new" && [ -s "/tmp/$m.js.new" ] && mv "/tmp/$m.js.new" "js/wix/$m.js" || true
+          done
       - name: Copiar imóveis à venda da Cleverson (1x por dia)
         run: |
           npm install --prefix /tmp/n sharp@0.33.5 --no-audit --no-fund --silent

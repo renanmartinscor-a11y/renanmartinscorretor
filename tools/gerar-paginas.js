@@ -455,12 +455,25 @@ const PESSOA = {
   }
 }
 
+// ---------- 6e. Dados para a Área do Corretor (/corretores/) e busca por nome ----------
+{
+  const emps = EMPS.map((e) => ({ id: e.id, nome: e.nome, incorp: e.incorp, cidade: e.cidade, bairro: e.bairro, endereco: e.endereco,
+    status: e.status, entrega: e.entrega || "", pronto: !!e.pronto, tabela: e.tabela || "", correcao: e.correcao || "", aviso: e.aviso || "",
+    consulta: !!e.consulta, url: "/imoveis/" + slug(e) + "/" }));
+  const units = UNITS.map((u) => ({ id: u.emp + "-" + u.key, emp: u.emp, un: u.un, quartos: u.quartos, area: u.area, vaga: u.vaga || "",
+    pos: u.pos || "", valor: u.valor, mar: u.mar || null, fluxos: u.fluxos }));
+  fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, "data", "corretores.json"), JSON.stringify({ gerado: new Date().toISOString(), emps, units }));
+}
+
 // ---------- 6d. Formulário de primeiro contato em todas as páginas ----------
 for (const f of ["index.html", "guia-itapoa.html"]) {
   const p = path.join(ROOT, f);
   if (!fs.existsSync(p)) continue;
   let h = fs.readFileSync(p, "utf8");
   h = h.split('href="/logo/icon-512.png"').join('href="/logo/icon-512.png?v=2"').split('href="favicon.png"').join('href="/favicon.png?v=2"');
+  if (f === "index.html" && !h.includes('href="/corretores/"')) h = h.replace(/<\/footer>(?![\s\S]*<\/footer>)/, '<p style="text-align:center;font-size:12px;opacity:.7;margin:8px 0 0"><a href="/corretores/" rel="nofollow" style="color:inherit">Área do Corretor</a></p></footer>');
+  if (f === "index.html" && !h.includes("/js/busca-nome.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/busca-nome.js" defer></script>\n</body>');
   if (!h.includes("/js/lead.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/lead.js" defer></script>\n</body>');
   fs.writeFileSync(p, h);
 }
@@ -470,6 +483,6 @@ const urls = [SITE + "/", SITE + "/renan-martins/", SITE + "/imoveis/", ...gerad
 fs.writeFileSync(path.join(ROOT, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
   urls.map((u) => `  <url><loc>${u}</loc></url>`).join("\n") + `\n</urlset>\n`);
-fs.writeFileSync(path.join(ROOT, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`);
+fs.writeFileSync(path.join(ROOT, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /corretores/\n\nSitemap: ${SITE}/sitemap.xml\n`);
 
 console.log("Páginas geradas:", gerados.length, "| URLs no sitemap:", urls.length);
