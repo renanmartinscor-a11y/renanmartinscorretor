@@ -1,7 +1,7 @@
 import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js/wix/member-store.js";
 import { wixRequest, WixApiError } from "/js/wix/client.js";
 import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
-import * as AP from "/js/apres.js?v=7146897e";
+import * as AP from "/js/apres.js?v=e8afc539";
 
 const DONO = "renanmartinscor@gmail.com";
 const $ = (s, el = document) => el.querySelector(s);
@@ -11,7 +11,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const mesAno = (e) => (e && /^\d{4}-\d{2}/.test(e) ? e.slice(5, 7) + "/" + e.slice(0, 4) : e || "");
 
-let DADOS = null, iniciado = false, PED = null, perfilCarregado = false, PERFIL_ID = null;
+let DADOS = null, iniciado = false, PED = null, perfilCarregado = false, PERFIL_ID = null, MEU = { nome: "", creci: "", wpp: "" };
 
 /* ---------------- login ---------------- */
 function msg(html, tipo = "i") { $("#authMsg").innerHTML = html ? `<div class="msg ${tipo}">${html}</div>` : ""; }
@@ -71,7 +71,6 @@ $("#fUp").addEventListener("submit", async (ev) => {
   const body = { loginId: { email: $("#upEmail").value.trim() }, password: $("#upSenha").value,
     profile: { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() }, captcha_tokens: [{ Recaptcha: capTok }] };
   const nomeCad = ($("#upNome").value.trim() + " " + $("#upSob").value.trim()).trim();
-  salvarPerfil({ nome: nomeCad, creci, wpp: cel });
   wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "CadastroCorretor", dataItem: { data: { title: nomeCad, email: $("#upEmail").value.trim().toLowerCase(), celular: cel, creci } } } }).catch(() => {});
   try { tratar(await resultadoAuth(await wixRequest("/_api/iam/authentication/v2/register", { body })), "up"); }
   catch (e) { tratar({ errorCode: (e instanceof WixApiError && registerErrorCode(e.code, e.details)) || e?.code || "erro" }, "up"); }
@@ -102,7 +101,6 @@ function render(st) {
   if (on) {
     $("#tabLeads").classList.toggle("hid", emailDo(st.member) !== DONO);
     if (emailDo(st.member) === DONO && PED === null) setTimeout(carregarPedidos, 800);
-    if (!lerPerfil().nome) salvarPerfil({ ...lerPerfil(), nome: nomeDo(st.member) });
     if (!perfilCarregado) { perfilCarregado = true; carregarPerfil(st.member); }
     if (!iniciado) { iniciado = true; iniciar(); abrirAba("apres"); }
   }
@@ -144,7 +142,7 @@ async function iniciar() {
   $("#pFx").addEventListener("change", previa);
   ["pCli", "pObs"].forEach((id) => $("#" + id).addEventListener("input", previa));
   $("#pGerar").addEventListener("click", gerarPdf);
-  $("#pApres").addEventListener("click", () => { const i = ITENS.find((x) => x.id === $("#pEmp").value); if (i) AP.abrir(i, $("#pUn").value, lerPerfil()); });
+  $("#pApres").addEventListener("click", () => { const i = ITENS.find((x) => x.id === $("#pEmp").value); if (i) AP.abrir(i, $("#pUn").value, exibir(), optsAbrir()); });
   $("#pShare").addEventListener("click", () => { const i = ITENS.find((x) => x.id === $("#pEmp").value); if (i) partilhar(i, $("#pUn").value); });
   unidades();
   iniciarApres();
@@ -192,7 +190,7 @@ function tabela() {
     L.map((u) => `<tr><td>${esc(u.un)}</td><td>${esc(u.quartos)}</td><td class="v">${u.area ? Number(u.area).toLocaleString("pt-BR") : "—"}</td><td>${esc(u.vaga)}</td><td>${esc(u.pos)}${(u.mar || /leste/i.test(u.pos || "")) ? ' <span class="tag">face mar</span>' : ""}</td><td class="v">${brl(u.valor)}</td>
       <td class="noprint" style="white-space:nowrap"><button class="btn s" data-tap="${u.id}">▶</button> <button class="btn o s" data-tsh="${u.id}">🔗 Compartilhar</button></td></tr>`).join("") + "</tbody>";
   const it = () => ITENS.find((x) => x.id === e.id);
-  $$("[data-tap]").forEach((b) => b.addEventListener("click", () => it() && AP.abrir(it(), b.dataset.tap, lerPerfil())));
+  $$("[data-tap]").forEach((b) => b.addEventListener("click", () => it() && AP.abrir(it(), b.dataset.tap, exibir(), optsAbrir())));
   $$("[data-tsh]").forEach((b) => b.addEventListener("click", () => it() && partilhar(it(), b.dataset.tsh, b)));
 }
 function csv() {
@@ -207,8 +205,19 @@ function csv() {
 }
 
 /* ---------------- proposta ---------------- */
-function lerPerfil() { try { return JSON.parse(localStorage.getItem("rm_corretor_v1") || "{}"); } catch { return {}; } }
-function salvarPerfil(p) { try { localStorage.setItem("rm_corretor_v1", JSON.stringify({ nome: p.nome || "", creci: p.creci || "", wpp: p.wpp || "" })); } catch {} mostrarSeus(); }
+/* MEU = dados de quem está logado (vêm do cadastro dele na nuvem). Vão no link que ELE compartilha e nas propostas dele.
+   Apresentar na tela (antes de compartilhar) mostra sempre os dados do Renan (AP.DONO). */
+const souDono = () => emailDo(getMemberState().member) === DONO;
+function lerPerfil() { return MEU; }
+function salvarPerfil(p) { MEU = { nome: p.nome || "", creci: p.creci || "", wpp: p.wpp || "" }; try { localStorage.removeItem("rm_corretor_v1"); } catch {} mostrarSeus(); }
+const exibir = () => AP.DONO;
+function dadosOk() {
+  if (MEU.nome && MEU.wpp && MEU.creci) return true;
+  toast("Antes de compartilhar, complete seus dados (celular e CRECI) em Meus dados.");
+  setTimeout(() => { AP.fechar(); abrirAba("dados"); }, 900);
+  return false;
+}
+const optsAbrir = () => ({ perfilLink: MEU, validar: dadosOk });
 function mostrarSeus() {
   const p = lerPerfil(), el = $("#pSeus"); if (!el) return;
   el.innerHTML = `<b>Seus dados na proposta:</b> ${esc(p.nome || "—")}${p.creci ? " · CRECI " + esc(p.creci) : ""}${p.wpp ? " · " + esc(p.wpp) : ""} · <a href="#" id="pAlt">alterar</a>`;
@@ -216,8 +225,10 @@ function mostrarSeus() {
 }
 /* ---------------- meus dados (cada corretor atualiza o seu) ---------------- */
 async function carregarPerfil(member) {
+  const base = emailDo(member) === DONO ? { ...AP.DONO } : { nome: [member?.contact?.firstName, member?.contact?.lastName].filter(Boolean).join(" "), creci: "", wpp: "" };
+  salvarPerfil(base);
   const p = lerPerfil();
-  $("#dNome").value = p.nome || nomeDo(member); $("#dCel").value = p.wpp || ""; $("#dCreci").value = p.creci || "";
+  $("#dNome").value = p.nome; $("#dCel").value = p.wpp; $("#dCreci").value = p.creci;
   try {
     const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PerfilCorretor", query: { paging: { limit: 5 } } } });
     const it = (r.dataItems || []).find((i) => !emailDo(member) || (i.data.email || "").toLowerCase() === emailDo(member)) || (r.dataItems || [])[0];
@@ -334,7 +345,7 @@ async function iniciarApres() {
   $("#escX").addEventListener("click", () => $("#esc").classList.add("hid"));
   $("#esc").addEventListener("click", (ev) => { if (ev.target.id === "esc") $("#esc").classList.add("hid"); });
   $("#escQ").addEventListener("input", listarUnidadesEsc);
-  $("#escGeral").addEventListener("click", () => { $("#esc").classList.add("hid"); AP.abrir(ESC, null, lerPerfil()); });
+  $("#escGeral").addEventListener("click", () => { $("#esc").classList.add("hid"); AP.abrir(ESC, null, exibir(), optsAbrir()); });
   $("#escGeralSh").addEventListener("click", () => partilhar(ESC, null));
   listarApres(); busca();
 }
@@ -352,7 +363,7 @@ function listarApres() {
   const R = rec.map((id) => ITENS.find((i) => i.id === id)).filter(Boolean);
   $("#arec").innerHTML = !q.length && R.length ? `<p class="note" style="margin:12px 0 0">Abertos recentemente: ${R.map((i) => `<a href="#" data-ap="${i.id}">${esc(i.nome)}</a>`).join(" · ")}</p>` : "";
   $$("[data-ap]").forEach((b) => b.addEventListener("click", (ev) => { ev.preventDefault(); abrirApres(b.dataset.ap); }));
-  $$("[data-geral]").forEach((b) => b.addEventListener("click", () => { const i = ITENS.find((x) => x.id === b.dataset.geral); if (i) { lembrar(i.id); AP.abrir(i, null, lerPerfil()); } }));
+  $$("[data-geral]").forEach((b) => b.addEventListener("click", () => { const i = ITENS.find((x) => x.id === b.dataset.geral); if (i) { lembrar(i.id); AP.abrir(i, null, exibir(), optsAbrir()); } }));
   $$("[data-shg]").forEach((b) => b.addEventListener("click", () => { const i = ITENS.find((x) => x.id === b.dataset.shg); if (i) partilhar(i, null); }));
 }
 function lembrar(id) { try { let r = JSON.parse(localStorage.getItem("rm_apres_rec") || "[]"); r = [id, ...r.filter((x) => x !== id)].slice(0, 6); localStorage.setItem("rm_apres_rec", JSON.stringify(r)); } catch {} }
@@ -360,7 +371,7 @@ function abrirApres(id) {
   const i = ITENS.find((x) => x.id === id); if (!i) return;
   lembrar(id);
   if (i.k === "e" && i.e._units.length) { escolher(i); return; }
-  AP.abrir(i, null, lerPerfil());
+  AP.abrir(i, null, exibir(), optsAbrir());
 }
 /* escolha: apresentação geral ou de uma unidade */
 function escolher(i) {
@@ -375,10 +386,11 @@ function listarUnidadesEsc() {
     .sort((a, b) => String(a.un).localeCompare(String(b.un), "pt-BR", { numeric: true }));
   $("#escL").innerHTML = U.map((u) => `<div class="urow"><div><b>${esc(u.un)}</b> <span class="note">${esc(u.quartos)}${u.area ? " · " + Number(u.area).toLocaleString("pt-BR") + " m²" : ""}${u.pos ? " · " + esc(u.pos) : ""}${(u.mar || /leste/i.test(u.pos || "")) ? ' · <span class="tag">face mar</span>' : ""}</span></div>
     <span class="sp"></span><b class="uv">${brl(u.valor)}</b><button class="btn s" data-uap="${u.id}">▶ Apresentar</button><button class="btn o s" data-ush="${u.id}" title="Compartilhar link">🔗 Compartilhar unidade</button></div>`).join("") || '<p class="note">Nenhuma unidade com esse filtro.</p>';
-  $$("[data-uap]").forEach((b) => b.addEventListener("click", () => { $("#esc").classList.add("hid"); AP.abrir(ESC, b.dataset.uap, lerPerfil()); }));
+  $$("[data-uap]").forEach((b) => b.addEventListener("click", () => { $("#esc").classList.add("hid"); AP.abrir(ESC, b.dataset.uap, exibir(), optsAbrir()); }));
   $$("[data-ush]").forEach((b) => b.addEventListener("click", () => partilhar(ESC, b.dataset.ush)));
 }
 async function partilhar(i, unitId, btn) {
+  if (!dadosOk()) return;
   const p = lerPerfil();
   const u = unitId ? i.e._units.find((z) => z.id === unitId) : null;
   const r = await AP.compartilhar(AP.linkCompartilhar(i, unitId, p), u ? `${i.nome} · unidade ${u.un}` : i.nome);

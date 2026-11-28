@@ -7,6 +7,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const mesAno = (e) => (e && /^\d{4}-\d{2}/.test(e) ? e.slice(5, 7) + "/" + e.slice(0, 4) : e || "");
 const m2 = (a) => Number(a).toLocaleString("pt-BR");
 export const util = { brl, esc, mesAno };
+/* Dados do dono da plataforma: aparecem nas apresentações feitas na Área do Corretor (antes de compartilhar). */
+export const DONO = { nome: "Renan Martins", creci: "77906F", wpp: "(47) 99201-1013" };
 
 /* ---------------- dados ---------------- */
 let CACHE = null;
@@ -189,7 +191,8 @@ function montar(opts) {
   if (q(".x")) q(".x").onclick = fechar;
   q(".sh").onclick = async () => {
     if (!atual) return;
-    const url = linkCompartilhar(atual.i, atual.unitId, atual.perfil);
+    if (atual.validar && !atual.validar()) return;
+    const url = linkCompartilhar(atual.i, atual.unitId, atual.perfilLink);
     const r = await compartilhar(url, atual.titulo);
     if (r === "copiado") aviso("Link copiado! É só colar no WhatsApp do cliente.");
   };
@@ -216,7 +219,7 @@ export function fechar() { if (!EL) return; EL.hidden = true; document.body.styl
 export function abrir(i, unitId, perfil, opts = {}) {
   montar(opts);
   const u = unitId && i.e ? i.e._units.find((z) => z.id === unitId) : null;
-  atual = { i, unitId: u ? unitId : null, perfil, titulo: u ? `${i.nome} · unidade ${u.un}` : i.nome };
+  atual = { i, unitId: u ? unitId : null, perfil, perfilLink: opts.perfilLink || perfil, validar: opts.validar, titulo: u ? `${i.nome} · unidade ${u.un}` : i.nome };
   EL.querySelectorAll(".sl").forEach((s) => s.remove());
   EL.querySelector(".stage").insertAdjacentHTML("beforeend", slides(i, atual.unitId, perfil).join(""));
   EL.querySelector(".tt").textContent = atual.titulo;
