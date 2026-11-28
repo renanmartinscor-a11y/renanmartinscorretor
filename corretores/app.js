@@ -14,15 +14,24 @@ let DADOS = null, iniciado = false;
 /* ---------------- login ---------------- */
 function msg(html, tipo = "i") { $("#authMsg").innerHTML = html ? `<div class="msg ${tipo}">${html}</div>` : ""; }
 function estado(r) { return (r && (r.state || r.status || r.result)) || ""; }
-function tratar(r) {
+function tratar(r, acao) {
   const st = estado(r);
   if (st === "SUCCESS") { msg(""); return; }
-  if (st === "EMAIL_VERIFICATION_REQUIRED") { mostrarForm("fCod"); msg("Confirme o seu e-mail com o código enviado.", "i"); return; }
-  if (st === "OWNER_APPROVAL_REQUIRED") { msg("Cadastro recebido! Aguarde a liberação do acesso.", "ok"); return; }
-  const code = r && (r.errorCode || r.error || "");
-  if (/exists/i.test(code)) msg("Este e-mail já tem cadastro. Use a aba Entrar.", "e");
-  else if (/password|invalid|notFound|wrong/i.test(code)) msg("E-mail ou senha incorretos.", "e");
-  else msg("Não foi possível entrar agora. Confira o e-mail e a senha e tente de novo.", "e");
+  if (st === "EMAIL_VERIFICATION_REQUIRED") { mostrarForm("fCod"); msg("Enviamos um código para o seu e-mail. Digite para confirmar.", "i"); return; }
+  if (st === "OWNER_APPROVAL_REQUIRED") {
+    msg(acao === "up" ? "Cadastro enviado! O Renan recebe o seu pedido por e-mail. Assim que ele aprovar, você entra com o seu e-mail e a senha que criou."
+      : "Seu cadastro ainda está aguardando a aprovação do Renan. Assim que ele aprovar, é só entrar com este e-mail e senha.", "ok");
+    return;
+  }
+  const code = String((r && (r.errorCode || "")) || "");
+  const txt = {
+    emailAlreadyExists: "Este e-mail já tem cadastro. Use a opção Entrar. Se o cadastro ainda não foi aprovado, aguarde a aprovação do Renan.",
+    invalidCredentials: "E-mail ou senha incorretos.", invalidPassword: "Senha incorreta.", invalidEmail: acao === "up" ? "Confira o e-mail digitado." : "E-mail ou senha incorretos.",
+    resetPassword: "Você precisa criar uma nova senha. Fale com o Renan.",
+    missingCaptchaToken: "O cadastro está bloqueado por uma verificação anti-robô. Avise o Renan.", invalidCaptchaToken: "O cadastro está bloqueado por uma verificação anti-robô. Avise o Renan.",
+    captchaRequired: "O cadastro está bloqueado por uma verificação anti-robô. Avise o Renan.",
+  }[code] || "Não foi possível concluir agora. Tente de novo em instantes ou avise o Renan.";
+  msg(esc(txt) + (code ? ` <small style="opacity:.6">(${esc(code)})</small>` : ""), "e");
 }
 function mostrarForm(id) { ["fIn", "fUp", "fCod"].forEach((f) => $("#" + f).classList.toggle("hid", f !== id)); }
 $$("[data-a]").forEach((b) => b.addEventListener("click", () => {
@@ -31,16 +40,16 @@ $$("[data-a]").forEach((b) => b.addEventListener("click", () => {
 }));
 $("#fIn").addEventListener("submit", async (ev) => {
   ev.preventDefault(); msg("Entrando…");
-  try { tratar(await login($("#inEmail").value.trim(), $("#inSenha").value)); } catch (e) { tratar({ errorCode: e?.code || "" }); }
+  try { tratar(await login($("#inEmail").value.trim(), $("#inSenha").value), "in"); } catch (e) { tratar({ errorCode: e?.code || "erro" }, "in"); }
 });
 $("#fUp").addEventListener("submit", async (ev) => {
   ev.preventDefault(); msg("Enviando…");
-  try { tratar(await register($("#upEmail").value.trim(), $("#upSenha").value, { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() })); }
-  catch (e) { tratar({ errorCode: e?.code || "" }); }
+  try { tratar(await register($("#upEmail").value.trim(), $("#upSenha").value, { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() }), "up"); }
+  catch (e) { tratar({ errorCode: e?.code || "erro" }, "up"); }
 });
 $("#fCod").addEventListener("submit", async (ev) => {
   ev.preventDefault(); msg("Confirmando…");
-  try { tratar(await verifyEmail($("#cod").value.trim())); } catch (e) { tratar({ errorCode: e?.code || "" }); }
+  try { tratar(await verifyEmail($("#cod").value.trim()), "up"); } catch (e) { tratar({ errorCode: e?.code || "erro" }, "up"); }
 });
 $("#sair").addEventListener("click", () => logout("/corretores/"));
 
