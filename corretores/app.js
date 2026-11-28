@@ -2,7 +2,7 @@ import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js
 import { wixRequest, WixApiError, setTokens } from "/js/wix/client.js";
 import { memberTokensForSession } from "/js/wix/auth.js";
 import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
-import * as AP from "/js/apres.js?v=e8afc539";
+import * as AP from "/js/apres.js?v=4d7e4695";
 
 const DONO = "renanmartinscor@gmail.com";
 const $ = (s, el = document) => el.querySelector(s);

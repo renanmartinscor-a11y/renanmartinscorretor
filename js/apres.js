@@ -57,7 +57,7 @@ function slidesFluxos(u, titulo) {
   return (u.fluxos || []).map((f, k) => {
     const tot = f.linhas.reduce((s, l) => s + l[1] * l[2], 0);
     return `<section class="sl" ${k ? "" : 'data-sec="Pagamento"'}><div class="k">${esc(titulo)}</div><h2>${esc(f.nome)}</h2>
-      <table>${f.linhas.map(([r, q, v, d]) => `<tr><td>${esc(r)}${d && !/^#/.test(d) ? " · " + esc(d) : ""}</td><td class="v">${q > 1 ? q + "x de " + brl(v) : brl(v)}</td><td class="v">${brl(q * v)}</td></tr>`).join("")}
+      <table class="fx">${f.linhas.map(([r, q, v, d]) => `<tr><td>${esc(r)}${d && !/^#/.test(d) ? " · " + esc(d) : ""}</td><td class="v">${q > 1 ? q + "x de " + brl(v) : brl(v)}</td><td class="v">${brl(q * v)}</td></tr>`).join("")}
       <tr><td><b>Total</b></td><td></td><td class="v"><b>${brl(tot)}</b></td></tr></table>
       <p class="aviso">Valores e condições podem mudar sem aviso prévio.</p></section>`;
   });
@@ -116,7 +116,7 @@ export function slides(i, unitId, perfil) {
     const g = {}; e._units.forEach((z) => { (g[z.quartos] ||= []).push(z); });
     const linhas = Object.keys(g).sort().map((k) => { const v = g[k].map((z) => z.valor), a = g[k].map((z) => z.area).filter(Boolean);
       return `<tr><td>${esc(k)}</td><td>${a.length ? m2(Math.min(...a)) + (Math.max(...a) > Math.min(...a) ? " a " + m2(Math.max(...a)) : "") + " m²" : ""}</td><td class="v">${g[k].length} disp.</td><td class="v">a partir de ${brl(Math.min(...v))}</td></tr>`; }).join("");
-    S.push(`<section class="sl" data-sec="Valores"><div class="k">Unidades e valores</div><h2>Opções disponíveis</h2><table>${linhas}</table><p class="aviso">${esc(e.tabela)} · Valores podem mudar sem aviso prévio.</p></section>`);
+    S.push(`<section class="sl" data-sec="Valores"><div class="k">Unidades e valores</div><h2>Opções disponíveis</h2><table class="vl">${linhas}</table><p class="aviso">${esc(e.tabela)} · Valores podem mudar sem aviso prévio.</p></section>`);
     const m = e._units.slice().sort((a, b) => a.valor - b.valor)[0];
     S.push(...slidesFluxos(m, `Exemplo de pagamento · unidade ${m.un} (${brl(m.valor)}) · menor valor disponível`));
   } else if ((x.condicoes || []).length) S.push(`<section class="sl" data-sec="Pagamento"><div class="k">Condições</div><h2>Condições de pagamento</h2>${lista(x.condicoes)}</section>`);
@@ -173,7 +173,47 @@ const CSS = `#rmShow{position:fixed;inset:0;background:#13233F;color:#fff;z-inde
 #rmShow .cred img{height:34px}#rmShow .cred a{color:#E3C98F}
 #rmShow .sl.capa .marca{position:absolute;top:18px;left:6vw;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E3C98F;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 #rmShow .ok{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;color:#13233F;padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;z-index:3}
-@media(max-width:700px){#rmShow .sl ul{columns:1}#rmShow .tt{display:none}#rmShow .nv{width:40px;height:56px;font-size:26px}#rmShow .fs{display:none}}
+#rmShow .mb,#rmShow .bar,#rmShow .mnu,#rmShow .mbk,#rmShow .ish{display:none}
+#rmShow .ic{width:18px;height:18px;flex:none}
+#rmShow .mnu{position:absolute;left:10px;right:10px;z-index:6;background:#0F1D36;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;max-height:calc(100% - 150px);overflow:auto;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+#rmShow .mnu .mh{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E3C98F;margin:0 0 10px}
+#rmShow .mg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#rmShow .mg button{padding:14px 12px;font:600 15px Inter,sans-serif;text-align:left;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:#fff;cursor:pointer}
+#rmShow .mg button.cur{background:#C29A4E;border-color:#C29A4E;color:#13233F}
+#rmShow .mbk{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.55)}
+@media(max-width:700px){
+#rmShow{height:100vh;height:100dvh;bottom:auto}
+#rmShow .top{padding:8px 10px;gap:8px}
+#rmShow .brand img{height:26px}
+#rmShow .tt,#rmShow .sec,#rmShow .fs,#rmShow .nv,#rmShow .sh .lb{display:none}
+#rmShow .nn{font-size:12px;opacity:.8;white-space:nowrap}
+#rmShow .mb,#rmShow .sh .ish{display:inline-flex}
+#rmShow .mb{align-items:center;gap:6px}
+#rmShow .sh{display:inline-flex;align-items:center;padding:7px 10px}
+#rmShow .b{padding:8px 11px;font-size:14px}
+#rmShow .mnu.open,#rmShow .mbk.open{display:block}
+#rmShow .bar{display:flex;align-items:center;gap:14px;padding:8px 14px calc(8px + env(safe-area-inset-bottom));background:#0B1528;border-top:1px solid rgba(255,255,255,.1)}
+#rmShow .bar button{width:52px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font-size:24px;line-height:1;cursor:pointer}
+#rmShow .bar button:disabled{opacity:.28}
+#rmShow .pg{flex:1;height:4px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden}
+#rmShow .pg i{display:block;height:100%;width:0;background:#C29A4E;transition:width .25s}
+#rmShow .sl{padding:18px 20px}
+#rmShow .sl.capa .cx{margin:0 -20px -18px;padding:48px 20px 26px}
+#rmShow .sl.capa .marca{left:20px;top:14px;font-size:11px}
+#rmShow .sl h1{font-size:clamp(28px,8vw,38px)}
+#rmShow .sl h2{font-size:clamp(22px,6.4vw,30px)}
+#rmShow .sl ul{columns:1}
+#rmShow .sl td,#rmShow .sl th{font-size:15px;padding:9px 6px}
+#rmShow table.fx,#rmShow table.fx tbody,#rmShow table.vl,#rmShow table.vl tbody{display:block}
+#rmShow table.fx tr{display:grid;grid-template-columns:1fr auto;column-gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+#rmShow table.fx td{border:0;padding:1px 0;font-size:16px}
+#rmShow table.fx td:first-child{grid-column:1/-1;font-size:13px;color:#C9D3E3}
+#rmShow table.fx td:nth-child(2){text-align:left;font-weight:600}
+#rmShow table.vl tr{display:grid;grid-template-columns:1fr auto auto;column-gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.15)}
+#rmShow table.vl td{border:0;padding:1px 0;font-size:15px}
+#rmShow table.vl td:first-child{grid-column:1/-1;font-weight:700;color:#E3C98F}
+#rmShow .cred{flex-direction:column;align-items:flex-start;gap:8px}
+}
 @media print{#rmShow{display:none!important}}`;
 
 let EL = null, cur = 0, atual = null;
@@ -182,11 +222,17 @@ function montar(opts) {
   const st = document.createElement("style"); st.textContent = CSS; document.head.appendChild(st);
   EL = document.createElement("div"); EL.id = "rmShow"; EL.hidden = true;
   EL.innerHTML = `<div class="top"><a class="brand" href="/" target="_blank" rel="noopener" title="Renan Martins · Corretor de Imóveis"><img src="/logo/logo-rm.png" alt="Renan Martins"></a><b class="tt"></b><span class="sec"></span><span class="sp"></span><span class="nn"></span>
-    <button class="b g sh" type="button">Compartilhar</button><button class="b fs" type="button">Tela cheia</button>${opts.semFechar ? "" : '<button class="b x" type="button">Fechar ✕</button>'}</div>
-    <div class="stage"><button class="nv p" type="button" aria-label="Anterior">‹</button><button class="nv n" type="button" aria-label="Próximo">›</button></div>`;
+    <button class="b mb" type="button" aria-haspopup="true" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu</button>
+    <button class="b g sh" type="button" aria-label="Compartilhar"><svg class="ic ish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg><span class="lb">Compartilhar</span></button><button class="b fs" type="button">Tela cheia</button>${opts.semFechar ? "" : '<button class="b x" type="button" aria-label="Fechar">Fechar ✕</button>'}</div>
+    <div class="mbk"></div><div class="mnu" role="menu"><p class="mh">Ir para</p><div class="mg"></div></div>
+    <div class="stage"><button class="nv p" type="button" aria-label="Anterior">‹</button><button class="nv n" type="button" aria-label="Próximo">›</button></div>
+    <div class="bar"><button class="bp" type="button" aria-label="Anterior">‹</button><div class="pg"><i></i></div><button class="bn" type="button" aria-label="Próximo">›</button></div>`;
   document.body.appendChild(EL);
   const q = (s) => EL.querySelector(s);
   q(".p").onclick = () => ir(cur - 1); q(".n").onclick = () => ir(cur + 1);
+  q(".bp").onclick = () => ir(cur - 1); q(".bn").onclick = () => ir(cur + 1);
+  q(".mb").onclick = () => menu(!q(".mnu").classList.contains("open"));
+  q(".mbk").onclick = () => menu(false);
   q(".fs").onclick = () => { if (!document.fullscreenElement) EL.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); };
   if (q(".x")) q(".x").onclick = fechar;
   q(".sh").onclick = async () => {
@@ -200,6 +246,7 @@ function montar(opts) {
     if (EL.hidden) return;
     if (ev.key === "ArrowRight" || ev.key === " ") { ev.preventDefault(); ir(cur + 1); }
     if (ev.key === "ArrowLeft") ir(cur - 1);
+    if (ev.key === "Escape" && q(".mnu").classList.contains("open")) { menu(false); return; }
     if (ev.key === "Escape" && !document.fullscreenElement && !opts.semFechar) fechar();
   });
   let x0 = null;
@@ -207,12 +254,23 @@ function montar(opts) {
   q(".stage").addEventListener("touchend", (ev) => { if (x0 == null) return; const dx = ev.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) ir(cur + (dx < 0 ? 1 : -1)); x0 = null; });
   return EL;
 }
+function menu(on) {
+  const m = EL.querySelector(".mnu"), b = EL.querySelector(".mbk"), t = EL.querySelector(".top");
+  m.style.top = t.offsetHeight + 8 + "px";
+  m.classList.toggle("open", on); b.classList.toggle("open", on);
+  EL.querySelector(".mb").setAttribute("aria-expanded", on ? "true" : "false");
+}
 function aviso(t) { const d = document.createElement("div"); d.className = "ok"; d.textContent = t; EL.querySelector(".stage").appendChild(d); setTimeout(() => d.remove(), 2600); }
 function ir(n) {
   const S = [...EL.querySelectorAll(".sl")]; if (!S.length) return;
   cur = Math.max(0, Math.min(S.length - 1, n));
   S.forEach((s, k) => s.classList.toggle("on", k === cur));
   EL.querySelector(".nn").textContent = `${cur + 1} / ${S.length}`;
+  EL.querySelector(".pg i").style.width = ((cur + 1) / S.length) * 100 + "%";
+  EL.querySelector(".bp").disabled = cur === 0; EL.querySelector(".bn").disabled = cur >= S.length - 1;
+  const ks = [...EL.querySelectorAll(".mg [data-go]")].map((b) => +b.dataset.go); let on = ks[0];
+  ks.forEach((k) => { if (k <= cur) on = k; });
+  EL.querySelectorAll("[data-go]").forEach((b) => b.classList.toggle("cur", +b.dataset.go === on));
   EL.querySelector(".p").style.visibility = cur ? "" : "hidden"; EL.querySelector(".n").style.visibility = cur < S.length - 1 ? "" : "hidden";
 }
 export function fechar() { if (!EL) return; EL.hidden = true; document.body.style.overflow = ""; if (document.fullscreenElement) document.exitFullscreen?.(); }
@@ -225,7 +283,8 @@ export function abrir(i, unitId, perfil, opts = {}) {
   EL.querySelector(".tt").textContent = atual.titulo;
   const sec = EL.querySelector(".sec");
   sec.innerHTML = [...EL.querySelectorAll(".sl")].map((s, k) => s.dataset.sec ? `<button class="b" type="button" data-go="${k}">${esc(s.dataset.sec)}</button>` : "").join("");
-  sec.querySelectorAll("[data-go]").forEach((b) => (b.onclick = () => ir(+b.dataset.go)));
+  const mg = EL.querySelector(".mg"); mg.innerHTML = sec.innerHTML;
+  EL.querySelectorAll(".sec [data-go],.mg [data-go]").forEach((b) => (b.onclick = () => { ir(+b.dataset.go); menu(false); }));
   EL.hidden = false; document.body.style.overflow = "hidden";
   ir(0);
 }
