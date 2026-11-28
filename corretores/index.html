@@ -54,6 +54,16 @@ td.v,th.v{text-align:right;white-space:nowrap}
 .acard .im{aspect-ratio:16/10;background:#DCD5C4 center/cover}
 .acard .tx{padding:10px 12px}.acard b{font-family:Marcellus,serif;font-weight:400;font-size:17px;color:var(--n);display:block}
 .acard small{color:var(--m)}
+.dono-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg,var(--n),#22406B);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:18px}
+.dono-top h2{color:#fff}.dono-top .note{color:#C9D3E3}.kk{color:var(--g2);text-transform:uppercase;letter-spacing:.14em;font-size:12px}
+.kpis{display:flex;gap:10px}.kpi{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:10px 16px;text-align:center;min-width:84px}
+.kpi b{display:block;font-family:Marcellus,serif;font-weight:400;font-size:28px;color:var(--g2)}.kpi span{font-size:12px;color:#C9D3E3}
+.dcard{border-radius:16px}.dh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}.dh h3{margin:0;color:var(--n);font-size:20px}
+.ped{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--l);border-radius:12px;margin-top:10px;flex-wrap:wrap}
+.ped .av{width:42px;height:42px;border-radius:50%;background:var(--n);color:var(--g2);display:flex;align-items:center;justify-content:center;font-family:Marcellus,serif;font-size:18px;flex:none}
+.ped .sp{flex:1}.ped b{color:var(--n)}.btn.ok{background:#1F7A45;color:#fff}.btn.no{background:#fff;color:#8A1C1C;border:1px solid #E3B4B4}
+.vazio{padding:16px;border:1px dashed #D8CFBD;border-radius:12px;color:var(--m);text-align:center;margin-top:10px}
+.atal{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.atal a{display:block;padding:14px;border:1px solid var(--l);border-radius:12px;text-decoration:none;color:var(--n);font-weight:600;background:#FAF7F0}.atal a:hover{border-color:var(--g)}
 #esc{position:fixed;inset:0;background:rgba(10,20,40,.6);z-index:70;display:flex;align-items:center;justify-content:center;padding:14px}
 .escbx{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:92vh;display:flex;flex-direction:column;padding:20px}
 .escg{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
@@ -187,22 +197,34 @@ td.v,th.v{text-align:right;white-space:nowrap}
       <div id="mList" class="note">Carregando…</div>
     </div>
 
-    <div class="card hid" data-p="leads">
-      <h2>Área do dono</h2>
-      <p>Só você vê esta aba.</p>
-      <h3 style="margin-top:14px">Aprovar corretores</h3>
-      <p class="note">Quando alguém cria cadastro, o Wix te manda um e-mail e o pedido fica aqui como pendente. O corretor só entra depois que você aprovar.</p>
-      <p><a class="btn" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Ver pedidos e aprovar</a></p>
-      <h3 style="margin-top:18px">Leads</h3>
-      <p class="note">Todo mundo que chama você no WhatsApp pelo site entra aqui: o primeiro contato (com nome, e-mail e cidade) e os contatos seguintes da mesma pessoa.</p>
-      <div class="row noprint" style="margin-bottom:10px"><div><input id="lq" placeholder="Filtrar por nome, e-mail, cidade ou imóvel…"></div>
-        <div style="display:flex;gap:8px;align-items:center"><button class="btn s" id="lAtual">Atualizar</button><button class="btn o s" id="lCsv">Baixar planilha</button></div></div>
-      <div id="lInfo" class="note"></div>
-      <div class="tw"><table id="lTab"></table></div>
-      <p style="margin-top:10px"><a class="btn o s" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/LeadsSite">Abrir leads no painel do Wix</a></p>
-      <h3 style="margin-top:18px">Materiais</h3>
-      <p><a class="btn o" target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/CorretoresMateriais">Editar materiais</a></p>
-      <p class="note">Os botões abrem o painel do Wix com o seu login de dono. Corretores não têm acesso.</p>
+    <div class="hid" data-p="leads">
+      <div class="dono-top">
+        <div><span class="kk">Área do dono</span><h2 style="margin:2px 0 0">Olá, Renan</h2><p class="note" style="margin:4px 0 0">Só você vê esta área.</p></div>
+        <div class="kpis"><div class="kpi"><b id="kPend">–</b><span>pedidos</span></div><div class="kpi"><b id="kLeads">–</b><span>leads</span></div><div class="kpi"><b id="kPess">–</b><span>pessoas</span></div></div>
+      </div>
+
+      <div class="card dcard">
+        <div class="dh"><h3>Pedidos de acesso</h3><button class="btn o s" id="pAtual">Atualizar</button></div>
+        <p class="note" style="margin-top:0">Quem pediu acesso à Área do Corretor. Aprove ou recuse aqui mesmo.</p>
+        <div id="pList"></div>
+      </div>
+
+      <div class="card dcard">
+        <div class="dh"><h3>Leads</h3><div style="display:flex;gap:8px"><button class="btn o s" id="lAtual">Atualizar</button><button class="btn o s" id="lCsv">Baixar planilha</button></div></div>
+        <p class="note" style="margin-top:0">Todo contato pelo WhatsApp que vem do site: o primeiro (com nome, e-mail e cidade) e os seguintes da mesma pessoa.</p>
+        <input id="lq" placeholder="Filtrar por nome, e-mail, cidade ou imóvel…" style="margin-bottom:8px">
+        <div id="lInfo" class="note"></div>
+        <div class="tw"><table id="lTab"></table></div>
+      </div>
+
+      <div class="card dcard">
+        <div class="dh"><h3>Atalhos do painel Wix</h3></div>
+        <div class="atal">
+          <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Todos os cadastros</a>
+          <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/LeadsSite">Leads no Wix</a>
+          <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/database/data/CorretoresMateriais">Editar materiais</a>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -217,6 +239,6 @@ td.v,th.v{text-align:right;white-space:nowrap}
   </div>
 </div>
 <script src="https://www.google.com/recaptcha/enterprise.js?render=explicit&hl=pt-BR" async defer></script>
-<script type="module" src="/corretores/app.js?v=9a51e392"></script>
+<script type="module" src="/corretores/app.js?v=ed985554"></script>
 </body>
 </html>

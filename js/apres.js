@@ -134,7 +134,7 @@ export async function compartilhar(url, titulo) {
 }
 
 /* ---------------- visualizador (tela cheia) ---------------- */
-const CSS = `#rmShow{position:fixed;inset:0;background:#13233F;color:#fff;z-index:9000;display:flex;flex-direction:column;font-family:Inter,system-ui,sans-serif}
+const CSS = `#rmShow{position:fixed;inset:0;background:#13233F;color:#fff;z-index:9000;display:flex;flex-direction:column;font-family:Inter,system-ui,sans-serif;text-align:left}
 #rmShow[hidden]{display:none}
 #rmShow .top{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:14px;flex-wrap:nowrap}
 #rmShow .top .sp{flex:1}#rmShow .sec{display:flex;gap:6px;overflow-x:auto;margin-left:8px}

@@ -1,7 +1,7 @@
 import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js/wix/member-store.js";
 import { wixRequest, WixApiError } from "/js/wix/client.js";
 import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
-import * as AP from "/js/apres.js?v=c04e420d";
+import * as AP from "/js/apres.js?v=a82a89ce";
 
 const DONO = "renanmartinscor@gmail.com";
 const $ = (s, el = document) => el.querySelector(s);
@@ -11,7 +11,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const mesAno = (e) => (e && /^\d{4}-\d{2}/.test(e) ? e.slice(5, 7) + "/" + e.slice(0, 4) : e || "");
 
-let DADOS = null, iniciado = false;
+let DADOS = null, iniciado = false, PED = null;
 
 /* ---------------- login ---------------- */
 function msg(html, tipo = "i") { $("#authMsg").innerHTML = html ? `<div class="msg ${tipo}">${html}</div>` : ""; }
@@ -95,6 +95,7 @@ function render(st) {
   $("#who").textContent = on ? nomeDo(st.member) : "";
   if (on) {
     $("#tabLeads").classList.toggle("hid", emailDo(st.member) !== DONO);
+    if (emailDo(st.member) === DONO && PED === null) setTimeout(carregarPedidos, 800);
     const perfil = lerPerfil();
     if (!perfil.nome) { $("#cNome").value = nomeDo(st.member); salvarPerfil(); }
     if (!iniciado) { iniciado = true; iniciar(); abrirAba("apres"); }
@@ -113,7 +114,7 @@ function abrirAba(t) {
   const b = $(`#tabs button[data-t="${t}"]`); $("#secAt").textContent = b ? "· " + b.textContent : "";
   $$("[data-p]").forEach((p) => p.classList.toggle("hid", p.dataset.p !== t));
   if (t === "materiais") carregarMateriais();
-  if (t === "leads") carregarLeads();
+  if (t === "leads") { carregarLeads(); carregarPedidos(); }
 }
 
 async function iniciar() {
@@ -356,6 +357,7 @@ function mostrarLeads() {
   const L = linhasLeads();
   const pessoas = new Set((LEADS || []).map((l) => (l.email || "").toLowerCase()).filter(Boolean)).size;
   $("#lInfo").textContent = `${(LEADS || []).length} contatos · ${pessoas} pessoas diferentes${L.length !== (LEADS || []).length ? ` · ${L.length} no filtro` : ""}`;
+  $("#kLeads").textContent = (LEADS || []).length; $("#kPess").textContent = pessoas;
   $("#lTab").innerHTML = `<thead><tr><th>Quando</th><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Tipo</th><th>Mensagem / imóvel</th></tr></thead><tbody>` +
     L.map((l) => `<tr><td style="white-space:nowrap">${esc(dataHora(l._createdDate))}</td><td>${esc(l.title)}</td><td>${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : ""}</td><td>${esc(l.cidade)}</td><td>${esc(l.tipo || "Primeiro contato")}</td><td style="max-width:360px">${esc((l.mensagem || "").slice(0, 220))}<br><span class="note">${esc(l.pagina || "")}</span></td></tr>`).join("") + "</tbody>";
 }
@@ -369,3 +371,42 @@ $("#lCsv").addEventListener("click", () => {
   a.href = URL.createObjectURL(new Blob(["﻿" + out.join("\n")], { type: "text/csv;charset=utf-8" }));
   a.download = "leads-site.csv"; a.click();
 });
+
+/* ---------------- pedidos de acesso (só o dono) ---------------- */
+async function carregarPedidos() {
+  $("#pList").innerHTML = '<div class="vazio">Carregando…</div>';
+  try {
+    const r = await wixRequest("/members/v1/members/query", { body: { query: { filter: { status: "PENDING" }, paging: { limit: 100 } }, fieldsets: ["FULL"] } });
+    PED = r.members || [];
+    mostrarPedidos();
+  } catch (e) {
+    $("#kPend").textContent = "?";
+    $("#pList").innerHTML = `<div class="vazio">Não consegui abrir os pedidos aqui. Use <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Todos os cadastros</a> no painel do Wix.<br><small>(${esc(e?.status || "")} ${esc(e?.code || "")})</small></div>`;
+  }
+}
+function mostrarPedidos() {
+  $("#kPend").textContent = PED.length;
+  $("#tabLeads").textContent = PED.length ? `Área do dono (${PED.length} pedido${PED.length > 1 ? "s" : ""})` : "Área do dono";
+  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Nenhum pedido esperando. Quando um corretor se cadastrar, ele aparece aqui.</div>'; return; }
+  $("#pList").innerHTML = PED.map((m) => {
+    const c = m.contact || {}, nome = [c.firstName, c.lastName].filter(Boolean).join(" ") || m.profile?.nickname || m.loginEmail;
+    const quando = m.createdDate ? new Date(m.createdDate).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
+    return `<div class="ped"><div class="av">${esc((nome || "?").trim().charAt(0).toUpperCase())}</div>
+      <div><b>${esc(nome)}</b><br><span class="note">${esc(m.loginEmail || "")}${quando ? " · pediu em " + esc(quando) : ""}</span></div><span class="sp"></span>
+      <button class="btn ok s" data-apr="${m.id}">✓ Aprovar</button><button class="btn no s" data-rec="${m.id}" data-nome="${esc(nome)}">✕ Recusar</button></div>`;
+  }).join("");
+  $$("[data-apr]").forEach((b) => b.addEventListener("click", () => decidir(b.dataset.apr, true, b)));
+  $$("[data-rec]").forEach((b) => b.addEventListener("click", () => { if (confirm(`Recusar o pedido de ${b.dataset.nome}? O cadastro será apagado e a pessoa não terá acesso.`)) decidir(b.dataset.rec, false, b); }));
+}
+async function decidir(id, aprovar, btn) {
+  const row = btn.closest(".ped"); row.style.opacity = ".5"; row.querySelectorAll("button").forEach((x) => (x.disabled = true));
+  try {
+    if (aprovar) await wixRequest(`/members/v1/members/${id}/approve`, { body: {} });
+    else await wixRequest(`/members/v1/members/${id}`, { method: "DELETE" });
+    PED = PED.filter((m) => m.id !== id); mostrarPedidos();
+  } catch (e) {
+    row.style.opacity = ""; row.querySelectorAll("button").forEach((x) => (x.disabled = false));
+    alert("Não consegui concluir aqui. Faça pelo painel do Wix (Todos os cadastros).");
+  }
+}
+$("#pAtual").addEventListener("click", carregarPedidos);
