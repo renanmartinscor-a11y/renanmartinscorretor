@@ -1,0 +1,20 @@
+name: Aprovar corretores (Área do dono)
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: aprovacoes
+  cancel-in-progress: false
+jobs:
+  aprovar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Processar aprovações e pedidos
+        env:
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+        run: node tools/aprovacoes.js

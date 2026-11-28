@@ -1,7 +1,7 @@
 import { subscribeMember, getMemberState, login, verifyEmail, logout } from "/js/wix/member-store.js";
 import { wixRequest, WixApiError } from "/js/wix/client.js";
 import { authOutcome, toLoginResult, registerErrorCode } from "/js/wix/auth-core.js";
-import * as AP from "/js/apres.js?v=a82a89ce";
+import * as AP from "/js/apres.js?v=7146897e";
 
 const DONO = "renanmartinscor@gmail.com";
 const $ = (s, el = document) => el.querySelector(s);
@@ -11,7 +11,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const mesAno = (e) => (e && /^\d{4}-\d{2}/.test(e) ? e.slice(5, 7) + "/" + e.slice(0, 4) : e || "");
 
-let DADOS = null, iniciado = false, PED = null;
+let DADOS = null, iniciado = false, PED = null, perfilCarregado = false, PERFIL_ID = null;
 
 /* ---------------- login ---------------- */
 function msg(html, tipo = "i") { $("#authMsg").innerHTML = html ? `<div class="msg ${tipo}">${html}</div>` : ""; }
@@ -64,9 +64,15 @@ async function resultadoAuth(raw) {
 $("#fUp").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   if (!capTok) { msg("Marque a caixa \"Não sou um robô\" antes de enviar.", "e"); return; }
+  const cel = $("#upCel").value.trim(), creci = $("#upCreci").value.trim();
+  if (cel.replace(/\D/g, "").length < 10) { msg("Confira o celular com DDD.", "e"); return; }
+  if (creci.length < 3) { msg("Informe o seu CRECI.", "e"); return; }
   msg("Enviando…");
   const body = { loginId: { email: $("#upEmail").value.trim() }, password: $("#upSenha").value,
     profile: { firstName: $("#upNome").value.trim(), lastName: $("#upSob").value.trim() }, captcha_tokens: [{ Recaptcha: capTok }] };
+  const nomeCad = ($("#upNome").value.trim() + " " + $("#upSob").value.trim()).trim();
+  salvarPerfil({ nome: nomeCad, creci, wpp: cel });
+  wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "CadastroCorretor", dataItem: { data: { title: nomeCad, email: $("#upEmail").value.trim().toLowerCase(), celular: cel, creci } } } }).catch(() => {});
   try { tratar(await resultadoAuth(await wixRequest("/_api/iam/authentication/v2/register", { body })), "up"); }
   catch (e) { tratar({ errorCode: (e instanceof WixApiError && registerErrorCode(e.code, e.details)) || e?.code || "erro" }, "up"); }
   resetCaptcha();
@@ -96,8 +102,8 @@ function render(st) {
   if (on) {
     $("#tabLeads").classList.toggle("hid", emailDo(st.member) !== DONO);
     if (emailDo(st.member) === DONO && PED === null) setTimeout(carregarPedidos, 800);
-    const perfil = lerPerfil();
-    if (!perfil.nome) { $("#cNome").value = nomeDo(st.member); salvarPerfil(); }
+    if (!lerPerfil().nome) salvarPerfil({ ...lerPerfil(), nome: nomeDo(st.member) });
+    if (!perfilCarregado) { perfilCarregado = true; carregarPerfil(st.member); }
     if (!iniciado) { iniciado = true; iniciar(); abrirAba("apres"); }
   }
 }
@@ -132,8 +138,7 @@ async function iniciar() {
   $("#tPrint").addEventListener("click", () => window.print());
   $("#tCsv").addEventListener("click", csv);
   preencherQ(); tabela();
-  const p = lerPerfil(); $("#cNome").value = p.nome || $("#cNome").value; $("#cCreci").value = p.creci || ""; $("#cWpp").value = p.wpp || "";
-  ["cNome", "cCreci", "cWpp"].forEach((id) => $("#" + id).addEventListener("input", salvarPerfil));
+  mostrarSeus();
   $("#pEmp").addEventListener("change", () => { unidades(); });
   $("#pUn").addEventListener("change", fluxos);
   $("#pFx").addEventListener("change", previa);
@@ -197,7 +202,47 @@ function csv() {
 
 /* ---------------- proposta ---------------- */
 function lerPerfil() { try { return JSON.parse(localStorage.getItem("rm_corretor_v1") || "{}"); } catch { return {}; } }
-function salvarPerfil() { try { localStorage.setItem("rm_corretor_v1", JSON.stringify({ nome: $("#cNome").value, creci: $("#cCreci").value, wpp: $("#cWpp").value })); } catch {} }
+function salvarPerfil(p) { try { localStorage.setItem("rm_corretor_v1", JSON.stringify({ nome: p.nome || "", creci: p.creci || "", wpp: p.wpp || "" })); } catch {} mostrarSeus(); }
+function mostrarSeus() {
+  const p = lerPerfil(), el = $("#pSeus"); if (!el) return;
+  el.innerHTML = `<b>Seus dados na proposta:</b> ${esc(p.nome || "—")}${p.creci ? " · CRECI " + esc(p.creci) : ""}${p.wpp ? " · " + esc(p.wpp) : ""} · <a href="#" id="pAlt">alterar</a>`;
+  $("#pAlt").onclick = (ev) => { ev.preventDefault(); abrirAba("dados"); };
+}
+/* ---------------- meus dados (cada corretor atualiza o seu) ---------------- */
+async function carregarPerfil(member) {
+  const p = lerPerfil();
+  $("#dNome").value = p.nome || nomeDo(member); $("#dCel").value = p.wpp || ""; $("#dCreci").value = p.creci || "";
+  try {
+    const r = await wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PerfilCorretor", query: { paging: { limit: 5 } } } });
+    const it = (r.dataItems || []).find((i) => !emailDo(member) || (i.data.email || "").toLowerCase() === emailDo(member)) || (r.dataItems || [])[0];
+    if (it) {
+      PERFIL_ID = it.id;
+      const d = it.data;
+      salvarPerfil({ nome: d.title || p.nome, creci: d.creci || "", wpp: d.celular || "" });
+      $("#dNome").value = d.title || p.nome || ""; $("#dCel").value = d.celular || ""; $("#dCreci").value = d.creci || "";
+    }
+  } catch (e) {}
+  const q = lerPerfil();
+  if (!q.creci || !q.wpp) {
+    const card = $('[data-p="apres"]');
+    if (card && !$("#avDados")) card.insertAdjacentHTML("afterbegin", '<div class="aviso-dados" id="avDados">Complete seus dados (celular e CRECI) para aparecerem nas apresentações que você compartilhar. <a href="#" id="avIr">Preencher agora</a></div>');
+    const ir = $("#avIr"); if (ir) ir.onclick = (ev) => { ev.preventDefault(); abrirAba("dados"); };
+  }
+}
+async function gravarPerfil() {
+  const p = { nome: $("#dNome").value.trim(), wpp: $("#dCel").value.trim(), creci: $("#dCreci").value.trim() };
+  if (!p.nome || !p.wpp || !p.creci) { $("#dMsg").textContent = "Preencha nome, celular e CRECI."; return; }
+  salvarPerfil(p);
+  const data = { title: p.nome, celular: p.wpp, creci: p.creci, email: emailDo(getMemberState().member) };
+  $("#dMsg").textContent = "Salvando…";
+  try {
+    if (PERFIL_ID) await wixRequest(`/wix-data/v2/items/${PERFIL_ID}`, { method: "PUT", body: { dataCollectionId: "PerfilCorretor", dataItem: { id: PERFIL_ID, data } } });
+    else { const r = await wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "PerfilCorretor", dataItem: { data } } }); PERFIL_ID = r.dataItem?.id || null; }
+    $("#dMsg").textContent = "Dados salvos!";
+    const av = $("#avDados"); if (av) av.remove();
+  } catch (e) { $("#dMsg").textContent = "Salvo neste aparelho. Não consegui salvar na nuvem agora; tente de novo depois."; }
+}
+$("#dSalvar").addEventListener("click", gravarPerfil);
 function unidades() {
   const e = emp($("#pEmp").value); if (!e) return;
   $("#pUn").innerHTML = e._units.slice().sort((a, b) => String(a.un).localeCompare(String(b.un), "pt-BR", { numeric: true }))
@@ -225,7 +270,7 @@ function htmlProposta(comCabecalho) {
     return `<tr><td>${esc(rot)}${quando ? " · " + esc(quando) : ""}</td><td class="v">${qt > 1 ? qt + "x de " + brl(val) : brl(val)}</td><td class="v">${brl(qt * val)}</td></tr>`;
   }).join("") : "";
   const total = f ? f.linhas.reduce((s, l) => s + l[1] * l[2], 0) : 0;
-  const p = { nome: $("#cNome").value, creci: $("#cCreci").value, wpp: $("#cWpp").value };
+  const p = lerPerfil();
   return `${comCabecalho ? `<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #C29A4E;padding-bottom:10px;margin-bottom:16px"><h1 style="margin:0;color:#13233F">Proposta / simulação</h1><span style="font-size:13px;color:#555">${hoje}</span></div>` : ""}
   ${$("#pCli").value ? `<p><b>Cliente:</b> ${esc($("#pCli").value)}</p>` : ""}
   <h2 style="color:#13233F;margin:6px 0">${esc(e.nome)}</h2>
@@ -246,7 +291,6 @@ function htmlProposta(comCabecalho) {
 }
 function previa() { $("#pPrev").innerHTML = `<div style="border:1px dashed #CFC7B5;border-radius:10px;padding:14px">${htmlProposta(false)}</div>`; }
 function gerarPdf() {
-  salvarPerfil();
   const e = emp($("#pEmp").value), u = unid();
   const w = window.open("", "_blank");
   if (!w) { alert("Libere pop-ups para gerar o PDF."); return; }
@@ -376,37 +420,39 @@ $("#lCsv").addEventListener("click", () => {
 async function carregarPedidos() {
   $("#pList").innerHTML = '<div class="vazio">Carregando…</div>';
   try {
-    const r = await wixRequest("/members/v1/members/query", { body: { query: { filter: { status: "PENDING" }, paging: { limit: 100 } }, fieldsets: ["FULL"] } });
-    PED = r.members || [];
+    const [r, d] = await Promise.all([
+      wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "PedidosAcesso", query: { paging: { limit: 100 } } } }),
+      wixRequest("/wix-data/v2/items/query", { body: { dataCollectionId: "DecisoesAcesso", query: { paging: { limit: 100 }, sort: [{ fieldName: "_createdDate", order: "DESC" }] } } }),
+    ]);
+    const enviados = new Set((d.dataItems || []).filter((x) => x.data.processado !== "sim").map((x) => x.data.memberId));
+    PED = (r.dataItems || []).map((x) => ({ ...x.data, enviado: enviados.has(x.data.memberId) }));
     mostrarPedidos();
   } catch (e) {
     $("#kPend").textContent = "?";
-    $("#pList").innerHTML = `<div class="vazio">Não consegui abrir os pedidos aqui. Use <a target="_blank" rel="noopener" href="https://manage.wix.com/dashboard/2fc06920-8f11-4c24-aba5-8949b216f92e/member-permissions/members">Todos os cadastros</a> no painel do Wix.<br><small>(${esc(e?.status || "")} ${esc(e?.code || "")})</small></div>`;
+    $("#pList").innerHTML = `<div class="vazio">Não consegui abrir os pedidos agora. Tente "Atualizar" daqui a pouco.<br><small>(${esc(e?.status || "")})</small></div>`;
   }
 }
 function mostrarPedidos() {
-  $("#kPend").textContent = PED.length;
-  $("#tabLeads").textContent = PED.length ? `Área do dono (${PED.length} pedido${PED.length > 1 ? "s" : ""})` : "Área do dono";
-  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Nenhum pedido esperando. Quando um corretor se cadastrar, ele aparece aqui.</div>'; return; }
+  const n = PED.filter((m) => !m.enviado).length;
+  $("#kPend").textContent = n;
+  $("#tabLeads").textContent = n ? `Área do dono (${n} pedido${n > 1 ? "s" : ""})` : "Área do dono";
+  if (!PED.length) { $("#pList").innerHTML = '<div class="vazio">Nenhum pedido esperando. Quando um corretor se cadastrar, ele aparece aqui em poucos minutos.</div>'; return; }
   $("#pList").innerHTML = PED.map((m) => {
-    const c = m.contact || {}, nome = [c.firstName, c.lastName].filter(Boolean).join(" ") || m.profile?.nickname || m.loginEmail;
-    const quando = m.createdDate ? new Date(m.createdDate).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
-    return `<div class="ped"><div class="av">${esc((nome || "?").trim().charAt(0).toUpperCase())}</div>
-      <div><b>${esc(nome)}</b><br><span class="note">${esc(m.loginEmail || "")}${quando ? " · pediu em " + esc(quando) : ""}</span></div><span class="sp"></span>
-      <button class="btn ok s" data-apr="${m.id}">✓ Aprovar</button><button class="btn no s" data-rec="${m.id}" data-nome="${esc(nome)}">✕ Recusar</button></div>`;
+    const quando = m.pedidoEm ? new Date(m.pedidoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "";
+    return `<div class="ped"><div class="av">${esc((m.title || "?").trim().charAt(0).toUpperCase())}</div>
+      <div><b>${esc(m.title)}</b><br><span class="note">${esc(m.email || "")}${m.celular ? " · " + esc(m.celular) : ""}${m.creci ? " · CRECI " + esc(m.creci) : ""}${quando ? " · pediu em " + esc(quando) : ""}</span></div><span class="sp"></span>
+      ${m.enviado ? '<span class="tag">✓ aprovado · liberando em instantes</span>' : `<button class="btn ok" data-apr="${esc(m.memberId)}">✓ Aprovar</button>`}</div>`;
   }).join("");
-  $$("[data-apr]").forEach((b) => b.addEventListener("click", () => decidir(b.dataset.apr, true, b)));
-  $$("[data-rec]").forEach((b) => b.addEventListener("click", () => { if (confirm(`Recusar o pedido de ${b.dataset.nome}? O cadastro será apagado e a pessoa não terá acesso.`)) decidir(b.dataset.rec, false, b); }));
+  $$("[data-apr]").forEach((b) => b.addEventListener("click", () => aprovar(b.dataset.apr, b)));
 }
-async function decidir(id, aprovar, btn) {
-  const row = btn.closest(".ped"); row.style.opacity = ".5"; row.querySelectorAll("button").forEach((x) => (x.disabled = true));
+async function aprovar(id, btn) {
+  btn.disabled = true; btn.textContent = "Aprovando…";
   try {
-    if (aprovar) await wixRequest(`/members/v1/members/${id}/approve`, { body: {} });
-    else await wixRequest(`/members/v1/members/${id}`, { method: "DELETE" });
-    PED = PED.filter((m) => m.id !== id); mostrarPedidos();
+    await wixRequest("/wix-data/v2/items", { body: { dataCollectionId: "DecisoesAcesso", dataItem: { data: { title: "aprovar", memberId: id, processado: "" } } } });
+    PED = PED.map((m) => (m.memberId === id ? { ...m, enviado: true } : m)); mostrarPedidos();
   } catch (e) {
-    row.style.opacity = ""; row.querySelectorAll("button").forEach((x) => (x.disabled = false));
-    alert("Não consegui concluir aqui. Faça pelo painel do Wix (Todos os cadastros).");
+    btn.disabled = false; btn.textContent = "✓ Aprovar";
+    alert("Não consegui registrar a aprovação. Tente de novo.");
   }
 }
 $("#pAtual").addEventListener("click", carregarPedidos);

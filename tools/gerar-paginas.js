@@ -495,8 +495,19 @@ const PESSOA = {
   const emps = EMPS.map((e) => ({ id: e.id, nome: e.nome, incorp: e.incorp, cidade: e.cidade, bairro: e.bairro, endereco: e.endereco,
     status: e.status, entrega: e.entrega || "", pronto: !!e.pronto, tabela: e.tabela || "", correcao: e.correcao || "", aviso: e.aviso || "",
     consulta: !!e.consulta, aPartir: e.aPartir || 0, url: "/imoveis/" + slug(e) + "/" }));
-  const units = UNITS.map((u) => ({ id: u.emp + "-" + u.key, emp: u.emp, un: u.un, quartos: u.quartos, area: u.area, vaga: u.vaga || "",
-    pos: u.pos || "", valor: u.valor, mar: u.mar || null, fluxos: u.fluxos }));
+  // Plantas por unidade (mesma regra do site: PLANTAS + plantaDe no index.html)
+  let plantaDe = () => null;
+  try {
+    const i0 = html.indexOf("const PL=(id,ext)"), i1 = html.indexOf("function plantaHTML", i0);
+    if (i0 > 0 && i1 > i0) {
+      const ctxP = {}; vm.createContext(ctxP);
+      vm.runInContext(html.slice(i0, i1) + "\n;globalThis.__P=plantaDe;", ctxP, { timeout: 2000 });
+      plantaDe = ctxP.__P;
+    }
+  } catch (e) { console.log("Plantas não lidas:", e.message); }
+  const units = UNITS.map((u) => { let pl = null; try { pl = plantaDe(u); } catch (e) {}
+    return { id: u.emp + "-" + u.key, emp: u.emp, un: u.un, quartos: u.quartos, area: u.area, vaga: u.vaga || "",
+    pos: u.pos || "", valor: u.valor, mar: u.mar || null, fluxos: u.fluxos, planta: pl ? { img: pl[0].t, full: pl[0].f, legenda: pl[1] } : null }; });
   fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
   fs.writeFileSync(path.join(ROOT, "data", "corretores.json"), JSON.stringify({ gerado: new Date().toISOString(), emps, units }));
   // Apresentação rápida (só o que já está no site)

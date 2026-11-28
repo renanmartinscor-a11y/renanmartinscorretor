@@ -48,7 +48,8 @@ function slideContato(perfil) {
   return `<section class="sl" data-sec="Contato"><div class="k">Fale comigo</div><h1>${esc(p.nome || "")}</h1>
     ${p.wpp ? `<p class="big">WhatsApp ${esc(p.wpp)}</p>` : ""}${p.creci ? `<p>CRECI ${esc(p.creci)}</p>` : ""}
     ${wa ? `<p><a class="rmA-wa" href="${wa}" target="_blank" rel="noopener">Chamar no WhatsApp</a></p>` : ""}
-    <p class="aviso">Valores e condições podem mudar sem aviso prévio. Imagens ilustrativas. Simulações sem valor de contrato.</p></section>`;
+    <p class="aviso">Valores e condições podem mudar sem aviso prévio. Imagens ilustrativas. Simulações sem valor de contrato.</p>
+    <div class="cred"><img src="/logo/logo-rm.png" alt=""><span>Apresentação feita na plataforma <b>Renan Martins · Corretor de Imóveis</b><br><a href="https://renanmartinscorretor.com.br" target="_blank" rel="noopener">renanmartinscorretor.com.br</a></span></div></section>`;
 }
 function slidesFluxos(u, titulo) {
   return (u.fluxos || []).map((f, k) => {
@@ -72,7 +73,7 @@ export function slides(i, unitId, perfil) {
   const S = [];
   if (i.k === "v") {
     const v = i.v;
-    S.push(`<section class="sl capa" data-sec="Início" ${bg(v.fotos[0] || "")}><div class="cx"><div class="k">${esc(v.tipo)}</div><h1>${esc(v.nome)}</h1>
+    S.push(`<section class="sl capa" data-sec="Início" ${bg(v.fotos[0] || "")}><span class="marca">Renan Martins · Corretor de Imóveis</span><div class="cx"><div class="k">${esc(v.tipo)}</div><h1>${esc(v.nome)}</h1>
       <p>${esc(v.local)}</p><p class="big">${esc(i.preco)}</p></div></section>`);
     if (v.info.length) S.push(`<section class="sl" data-sec="Ficha"><div class="k">O imóvel</div><h2>${esc(v.nome)}</h2><table>${v.info.map(([a, b]) => `<tr><td><b>${esc(a)}</b></td><td>${esc(b)}</td></tr>`).join("")}</table>
       ${v.comodidades.length ? `<p style="margin-top:14px">${v.comodidades.map(esc).join(" · ")}</p>` : ""}</section>`);
@@ -85,7 +86,7 @@ export function slides(i, unitId, perfil) {
   const u = unitId ? e._units.find((z) => z.id === unitId) : null;
   if (u) {
     /* apresentação da unidade */
-    S.push(`<section class="sl capa" data-sec="Início" ${bg(fotos[0] || "")}><div class="cx"><div class="k">${esc(e.nome)} · ${esc(e.incorp)}</div>
+    S.push(`<section class="sl capa" data-sec="Início" ${bg(fotos[0] || "")}><span class="marca">Renan Martins · Corretor de Imóveis</span><div class="cx"><div class="k">${esc(e.nome)} · ${esc(e.incorp)}</div>
       <h1>Unidade ${esc(u.un)}</h1><p>${esc(u.quartos)}${u.area ? " · " + m2(u.area) + " m²" : ""}${faceMar(u) ? " · face mar" : ""}</p>
       <p class="big">${brl(u.valor)}${ent ? ` <span style="font-size:.5em;color:#fff">· ${esc(ent)}</span>` : ""}</p></div></section>`);
     S.push(`<section class="sl" data-sec="Unidade"><div class="k">Ficha da unidade</div><h2>Unidade ${esc(u.un)}</h2><table>
@@ -98,13 +99,15 @@ export function slides(i, unitId, perfil) {
       ${ent ? `<tr><td><b>Entrega</b></td><td>${esc(ent)}</td></tr>` : ""}
       <tr><td><b>Valor</b></td><td><b>${brl(u.valor)}</b></td></tr></table>
       <p class="aviso">${esc(e.tabela)}${e.correcao ? " · " + esc(e.correcao) : ""} · Valores podem mudar sem aviso prévio.</p></section>`);
+    if (u.planta) S.push(`<section class="sl planta" data-sec="Planta"><div class="k">Planta · unidade ${esc(u.un)}</div>
+      <div class="pimg"><img src="${esc(u.planta.img)}" alt="Planta da unidade ${esc(u.un)}" loading="lazy"></div><p class="aviso">${esc(u.planta.legenda || "")} · imagem ilustrativa</p></section>`);
     S.push(...slidesFluxos(u, `Pagamento · unidade ${u.un} (${brl(u.valor)})`));
     slidesEmpBase(i, S);
     S.push(slideContato(perfil));
     return S;
   }
   /* apresentação geral */
-  S.push(`<section class="sl capa" data-sec="Início" ${bg(fotos[0] || "")}><div class="cx"><div class="k">${esc(e.incorp)} · ${esc(e.status)}</div><h1>${esc(e.nome)}</h1>
+  S.push(`<section class="sl capa" data-sec="Início" ${bg(fotos[0] || "")}><span class="marca">Renan Martins · Corretor de Imóveis</span><div class="cx"><div class="k">${esc(e.incorp)} · ${esc(e.status)}</div><h1>${esc(e.nome)}</h1>
     <p>${esc(e.endereco || e.bairro + ", " + e.cidade)}</p><p class="big">${esc(i.preco)}${ent ? ` <span style="font-size:.55em;color:#fff">· ${esc(ent)}</span>` : ""}</p></div></section>`);
   slidesEmpBase(i, S);
   if (e._units.length) {
@@ -160,6 +163,13 @@ const CSS = `#rmShow{position:fixed;inset:0;background:#13233F;color:#fff;z-inde
 #rmShow .rmA-wa{display:inline-block;background:#1FA855;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700}
 #rmShow .nv{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.35);border:0;color:#fff;font-size:34px;width:52px;height:72px;cursor:pointer;border-radius:8px;z-index:2}
 #rmShow .nv.p{left:8px}#rmShow .nv.n{right:8px}
+#rmShow .brand img{height:30px;display:block}
+#rmShow .sl.planta .pimg{flex:1;min-height:0;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;padding:12px;margin-top:10px}
+#rmShow .sl.planta .pimg img{max-width:100%;max-height:100%;object-fit:contain}
+#rmShow .sl.planta.on{justify-content:flex-start}
+#rmShow .cred{display:flex;align-items:center;gap:12px;margin-top:22px;padding-top:16px;border-top:1px solid rgba(255,255,255,.15);font-size:13px;color:#C9D3E3}
+#rmShow .cred img{height:34px}#rmShow .cred a{color:#E3C98F}
+#rmShow .sl.capa .marca{position:absolute;top:18px;left:6vw;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E3C98F;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 #rmShow .ok{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;color:#13233F;padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;z-index:3}
 @media(max-width:700px){#rmShow .sl ul{columns:1}#rmShow .tt{display:none}#rmShow .nv{width:40px;height:56px;font-size:26px}#rmShow .fs{display:none}}
 @media print{#rmShow{display:none!important}}`;
@@ -169,7 +179,7 @@ function montar(opts) {
   if (EL) return EL;
   const st = document.createElement("style"); st.textContent = CSS; document.head.appendChild(st);
   EL = document.createElement("div"); EL.id = "rmShow"; EL.hidden = true;
-  EL.innerHTML = `<div class="top"><b class="tt"></b><span class="sec"></span><span class="sp"></span><span class="nn"></span>
+  EL.innerHTML = `<div class="top"><a class="brand" href="/" target="_blank" rel="noopener" title="Renan Martins · Corretor de Imóveis"><img src="/logo/logo-rm.png" alt="Renan Martins"></a><b class="tt"></b><span class="sec"></span><span class="sp"></span><span class="nn"></span>
     <button class="b g sh" type="button">Compartilhar</button><button class="b fs" type="button">Tela cheia</button>${opts.semFechar ? "" : '<button class="b x" type="button">Fechar ✕</button>'}</div>
     <div class="stage"><button class="nv p" type="button" aria-label="Anterior">‹</button><button class="nv n" type="button" aria-label="Próximo">›</button></div>`;
   document.body.appendChild(EL);
