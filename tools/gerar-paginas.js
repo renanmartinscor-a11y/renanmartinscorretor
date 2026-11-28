@@ -472,6 +472,17 @@ const PESSOA = {
   }
 }
 
+// ---------- 6f. Área do Corretor: versão no app.js para não ficar preso no cache ----------
+{
+  const pc = path.join(ROOT, "corretores", "index.html");
+  if (fs.existsSync(pc)) {
+    const v = require("crypto").createHash("md5").update(fs.readFileSync(path.join(ROOT, "corretores", "app.js"))).digest("hex").slice(0, 8);
+    const h0 = fs.readFileSync(pc, "utf8");
+    const h1 = h0.replace(/\/corretores\/app\.js(\?v=[0-9a-f]+)?"/, "/corretores/app.js?v=" + v + '"');
+    if (h1 !== h0) fs.writeFileSync(pc, h1);
+  }
+}
+
 // ---------- 6e. Dados para a Área do Corretor (/corretores/) e busca por nome ----------
 {
   const emps = EMPS.map((e) => ({ id: e.id, nome: e.nome, incorp: e.incorp, cidade: e.cidade, bairro: e.bairro, endereco: e.endereco,
@@ -501,6 +512,25 @@ for (const f of ["index.html", "guia-itapoa.html"]) {
   let h = fs.readFileSync(p, "utf8");
   h = h.split('href="/logo/icon-512.png"').join('href="/logo/icon-512.png?v=2"').split('href="favicon.png"').join('href="/favicon.png?v=2"');
   if (f === "index.html" && !h.includes('href="/corretores/"')) h = h.replace(/<\/footer>(?![\s\S]*<\/footer>)/, '<p style="text-align:center;font-size:12px;opacity:.7;margin:8px 0 0"><a href="/corretores/" rel="nofollow" style="color:inherit">Área do Corretor</a></p></footer>');
+  // Menu do cabeçalho sempre recolhido num botão "☰ Menu" (cabeçalho limpo também no computador)
+  if (f === "index.html" && !h.includes("/* menu-recolhido */")) {
+    h = h.replace(/<\/head>/, `<style>/* menu-recolhido */
+.menu-toggle{display:block!important;margin-left:auto;font-size:14px!important;padding:10px 18px!important;cursor:pointer}
+header.top nav.menu{display:none;position:absolute;top:76px;right:16px;left:auto;width:min(300px,calc(100vw - 32px));margin:0;background:#13233F;flex-direction:column;gap:2px;padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 40px rgba(0,0,0,.28);z-index:60}
+header.top nav.menu.open{display:flex}
+header.top nav.menu a{color:#fff;padding:12px 14px;font-size:15.5px;border-radius:10px}
+header.top nav.menu a:hover,header.top nav.menu a.on{background:rgba(255,255,255,.12);color:#fff}
+header.top nav.menu a.menu-corretor{margin-top:6px;border-top:1px solid rgba(255,255,255,.14);border-radius:0 0 10px 10px;color:#E8C98E}
+@media (min-width:1061px){.top .cta{display:inline-flex!important}}
+@media (max-width:640px){header.top nav.menu{top:68px;right:8px;width:calc(100vw - 16px)}}
+</style>
+</head>`);
+    h = h.replace('aria-controls="menu">Menu</button>', 'aria-controls="menu">☰ Menu</button>');
+    h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, `<script>/* menu-recolhido */(function(){var m=document.getElementById("menu"),t=document.getElementById("menuToggle");if(!m||!t)return;
+m.addEventListener("click",function(e){if(e.target.closest("a")){m.classList.remove("open");t.setAttribute("aria-expanded","false");}});
+document.addEventListener("click",function(e){if(!e.target.closest("#menu")&&!e.target.closest("#menuToggle")&&m.classList.contains("open")){m.classList.remove("open");t.setAttribute("aria-expanded","false");}});})();</script>
+</body>`);
+  }
   if (f === "index.html" && !h.includes('class="menu-corretor"')) h = h.replace(/(<nav class="menu" id="menu">[\s\S]*?)(\s*<\/nav>)/, '$1\n      <a href="/corretores/" class="menu-corretor" rel="nofollow">Área do Corretor</a>$2');
   if (f === "index.html" && !h.includes("/js/busca-nome.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/busca-nome.js" defer></script>\n</body>');
   if (!h.includes("/js/lead.js")) h = h.replace(/<\/body>(?![\s\S]*<\/body>)/, '<script src="/js/lead.js" defer></script>\n</body>');

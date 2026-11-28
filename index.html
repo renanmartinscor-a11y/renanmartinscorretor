@@ -606,7 +606,17 @@ header.top.solid{background:rgba(19,35,63,.97)!important;border-bottom:1px solid
 .brand small{color:#D9B56E}
 .brand img{height:44px;width:auto}
 </style>
-<script id="wix-site-script" src="https://manage.wix.com/_api/headless-business-setup/v1/headless-business/site-script.js" data-client-id="179d5058-84eb-49f6-80f8-7cf22d9f5e08" async></script></head>
+<script id="wix-site-script" src="https://manage.wix.com/_api/headless-business-setup/v1/headless-business/site-script.js" data-client-id="179d5058-84eb-49f6-80f8-7cf22d9f5e08" async></script><style>/* menu-recolhido */
+.menu-toggle{display:block!important;margin-left:auto;font-size:14px!important;padding:10px 18px!important;cursor:pointer}
+header.top nav.menu{display:none;position:absolute;top:76px;right:16px;left:auto;width:min(300px,calc(100vw - 32px));margin:0;background:#13233F;flex-direction:column;gap:2px;padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 40px rgba(0,0,0,.28);z-index:60}
+header.top nav.menu.open{display:flex}
+header.top nav.menu a{color:#fff;padding:12px 14px;font-size:15.5px;border-radius:10px}
+header.top nav.menu a:hover,header.top nav.menu a.on{background:rgba(255,255,255,.12);color:#fff}
+header.top nav.menu a.menu-corretor{margin-top:6px;border-top:1px solid rgba(255,255,255,.14);border-radius:0 0 10px 10px;color:#E8C98E}
+@media (min-width:1061px){.top .cta{display:inline-flex!important}}
+@media (max-width:640px){header.top nav.menu{top:68px;right:8px;width:calc(100vw - 16px)}}
+</style>
+</head>
 <body>
 
 <header class="top" id="top">
@@ -615,7 +625,7 @@ header.top.solid{background:rgba(19,35,63,.97)!important;border-bottom:1px solid
       <img src="/logo/logo-rm.png" alt="" width="99" height="44">
       <span><b>RENAN MARTINS</b><small>Corretor de Imóveis</small></span>
     </a>
-    <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menu">Menu</button>
+    <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="menu">☰ Menu</button>
     <nav class="menu" id="menu">
       <a href="#inicio" data-v="inicio">Início</a>
       <a href="#empreendimentos" data-v="empreendimentos">Empreendimentos</a>
@@ -1664,5 +1674,8 @@ try{(function(){var el=document.getElementById('homeVendaCards');if(!el||typeof 
 </script>
 <script src="/js/busca-nome.js" defer></script>
 <script src="/js/lead.js" defer></script>
+<script>/* menu-recolhido */(function(){var m=document.getElementById("menu"),t=document.getElementById("menuToggle");if(!m||!t)return;
+m.addEventListener("click",function(e){if(e.target.closest("a")){m.classList.remove("open");t.setAttribute("aria-expanded","false");}});
+document.addEventListener("click",function(e){if(!e.target.closest("#menu")&&!e.target.closest("#menuToggle")&&m.classList.contains("open")){m.classList.remove("open");t.setAttribute("aria-expanded","false");}});})();</script>
 </body>
 </html>
